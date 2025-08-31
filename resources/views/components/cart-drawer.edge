@@ -1,0 +1,163 @@
+<div 
+  x-show="$store.cart.isDrawerOpen" 
+  x-transition:enter="transition ease-out duration-300"
+  x-transition:enter-start="opacity-0"
+  x-transition:enter-end="opacity-100"
+  x-transition:leave="transition ease-in duration-200"
+  x-transition:leave-start="opacity-100"
+  x-transition:leave-end="opacity-0"
+  class="fixed inset-0 z-50 overflow-hidden"
+  @click.self="$store.cart.close()"
+>
+  <!-- Backdrop -->
+  <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+  
+  <!-- Drawer -->
+  <div 
+    x-show="$store.cart.isDrawerOpen"
+    x-transition:enter="transition ease-out duration-300"
+    x-transition:enter-start="translate-x-full"
+    x-transition:enter-end="translate-x-0"
+    x-transition:leave="transition ease-in duration-200"
+    x-transition:leave-start="translate-x-0"
+    x-transition:leave-end="translate-x-full"
+    class="absolute right-0 top-0 h-full w-96 bg-white shadow-xl flex flex-col"
+  >
+    <!-- Header do Drawer -->
+    <div class="flex items-center justify-between p-4 border-b">
+      <h2 class="text-lg font-semibold text-gray-900">Carrinho de Compras</h2>
+      <button 
+        @click="$store.cart.close()"
+        class="text-gray-400 hover:text-gray-600"
+      >
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Conteúdo do Carrinho -->
+    <div class="flex-1 overflow-y-auto p-4">
+      <!-- Carrinho vazio -->
+      <div x-show="$store.cart.items.length === 0" class="text-center py-8">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4" />
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">Ainda não há nada no seu carrinho</h3>
+        <p class="mt-1 text-sm text-gray-500">Vamos às compras?</p>
+        <div class="mt-6">
+          <button
+            @click="$store.cart.close()"
+            class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700"
+          >
+            Continuar Comprando
+          </button>
+        </div>
+      </div>
+
+      <!-- Itens do carrinho -->
+      <div x-show="$store.cart.items.length > 0" class="space-y-4">
+        <template x-for="item in $store.cart.items" :key="item.id">
+          <div class="flex space-x-4 border-b pb-4">
+            <!-- Imagem do produto -->
+            <div class="flex-shrink-0">
+              <img 
+                x-bind:src="item.thumbnailUrl || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0zMiAzNkMyOC42ODYzIDM2IDI2IDMzLjMxMzcgMjYgMzBDMjYgMjYuNjg2MyAyOC42ODYzIDI0IDMyIDI0QzM1LjMxMzcgMjQgMzggMjYuNjg2MyAzOCAzMEMzOCAzMy4zMTM3IDM1LjMxMzcgMzYgMzIgMzZaIiBmaWxsPSIjOUI5QkEwIi8+CjxwYXRoIGQ9Ik0yMCA0OEg0NEM0Ni4yMDkxIDQ4IDQ4IDQ2LjIwOTEgNDggNDRWMjBDNDggMTcuNzkwOSA0Ni4yMDkxIDE2IDQ0IDE2SDIwQzE3Ljc5MDkgMTYgMTYgMTcuNzkwOSAxNiAyMFY0NEMxNiA0Ni4yMDkxIDE3Ljc5MDkgNDggMjAgNDhaIiBzdHJva2U9IiM5QjlCQTAiIHN0cm9rZS13aWR0aD0iMiIvPgo8L3N2Zz4K'" 
+                x-bind:alt="item.name"
+                class="w-16 h-16 object-cover rounded-lg bg-gray-100"
+              />
+            </div>
+            
+            <!-- Informações do produto -->
+            <div class="flex-1 min-w-0">
+              <h4 class="text-sm font-medium text-gray-900" x-text="item.name"></h4>
+              <p class="text-sm text-gray-500 mt-1">
+                R$ <span x-text="(item.price || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span>
+              </p>
+              
+              <!-- Controles de quantidade -->
+              <div class="flex items-center space-x-2 mt-2">
+                <button
+                  @click="$store.cart.updateQuantity(item, item.quantity - 1)"
+                  class="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-50"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                  </svg>
+                </button>
+                
+                <span class="text-sm font-medium text-gray-900" x-text="item.quantity"></span>
+                
+                <button
+                  @click="$store.cart.updateQuantity(item, item.quantity + 1)"
+                  class="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-50"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            
+            <!-- Botão remover -->
+            <button
+              @click="$store.cart.removeItem(item)"
+              class="text-gray-400 hover:text-red-500"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- Footer do Drawer com resumo e botões -->
+    <div x-show="$store.cart.items.length > 0" class="border-t p-4 space-y-4">
+      <!-- Cupom -->
+      <div>
+        <label for="coupon" class="block text-sm font-medium text-gray-700 mb-2">Cupom de desconto</label>
+        <div class="flex space-x-2">
+          <input
+            type="text"
+            id="coupon"
+            placeholder="Digite seu cupom"
+            class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+          />
+          <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm hover:bg-gray-200">
+            Aplicar
+          </button>
+        </div>
+      </div>
+
+      <!-- Resumo dos valores -->
+      <div class="space-y-2">
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-600">Subtotal:</span>
+          <span class="font-medium">R$ <span x-text="(() => {
+            return $store.cart.items.reduce((total, item) => {
+              return total + ((item.price || 0) * item.quantity)
+            }, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })
+          })()"></span></span>
+        </div>
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-600">Total:</span>
+          <span class="font-bold text-lg">R$ <span x-text="(() => {
+            return $store.cart.items.reduce((total, item) => {
+              return total + ((item.price || 0) * item.quantity)
+            }, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })
+          })()"></span></span>
+        </div>
+      </div>
+
+      <!-- Botão finalizar compra -->
+      <a
+        href="/cart"
+        class="w-full bg-orange-600 text-white py-3 px-4 rounded-md text-sm font-medium hover:bg-orange-700 text-center block"
+      >
+        Finalizar Compra
+      </a>
+    </div>
+  </div>
+</div>

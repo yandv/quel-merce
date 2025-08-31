@@ -16,6 +16,8 @@ const CategoriesController = () => import('#controllers/categories_controller')
 const ProductsController = () => import('#controllers/products_controller')
 
 router.on('/').render('pages/home')
+router.on('/cart').render('pages/cart')
+router.on('/login').render('pages/login')
 
 router
   .group(() => {
