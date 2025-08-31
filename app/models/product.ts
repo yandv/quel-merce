@@ -21,6 +21,9 @@ export default class Product extends BaseModel {
   declare sku: string | null
 
   @column()
+  declare thumbnailUrl: string | null
+
+  @column()
   declare categoryId: string
 
   @belongsTo(() => Category, {

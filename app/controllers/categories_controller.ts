@@ -8,18 +8,15 @@ export default class CategoriesController {
    * Função auxiliar para obter todos os IDs de subcategorias recursivamente
    */
   private async getAllSubcategoryIds(categoryId: string): Promise<string[]> {
-    // Query recursiva usando CTE (Common Table Expression) para buscar todas as subcategorias
     const result = await db.rawQuery(
       `
       WITH RECURSIVE category_tree AS (
-        -- Caso base: a categoria inicial
         SELECT id, parent_id, name, 1 as level
         FROM categories
         WHERE id = ?
         
         UNION ALL
         
-        -- Caso recursivo: buscar filhos
         SELECT c.id, c.parent_id, c.name, ct.level + 1
         FROM categories c
         INNER JOIN category_tree ct ON c.parent_id = ct.id
@@ -67,7 +64,6 @@ export default class CategoriesController {
       return response.status(404).json({ error: 'Categoria não encontrada' })
     }
 
-    // Obter todos os IDs de subcategorias recursivamente
     const subcategoryIds = await this.getAllSubcategoryIds(id)
 
     // Incluir a categoria principal e todas as subcategorias

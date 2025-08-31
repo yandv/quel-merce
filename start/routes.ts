@@ -13,6 +13,7 @@ const VehiclesController = () => import('#controllers/vehicles_controller')
 const UsersController = () => import('#controllers/users_controller')
 const BrandsController = () => import('#controllers/brands_controller')
 const CategoriesController = () => import('#controllers/categories_controller')
+const ProductsController = () => import('#controllers/products_controller')
 
 router.on('/').render('pages/home')
 
@@ -47,5 +48,12 @@ router
         router.get(':id/products', [CategoriesController, 'getCategoryProducts'])
       })
       .prefix('categories')
+
+    router
+      .group(() => {
+        router.get('/', [ProductsController, 'getProducts'])
+        router.get(':id', [ProductsController, 'getProduct'])
+      })
+      .prefix('products')
   })
   .prefix('api')

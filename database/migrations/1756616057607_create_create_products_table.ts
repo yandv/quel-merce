@@ -10,6 +10,7 @@ export default class extends BaseSchema {
       table.text('description').nullable()
       table.decimal('price', 10, 2).nullable()
       table.string('sku').nullable()
+      table.string('thumbnail_url').nullable()
       table
         .uuid('category_id')
         .notNullable()
