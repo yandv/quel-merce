@@ -11,6 +11,9 @@ const staticServerConfig = defineConfig({
   enabled: true,
   etag: true,
   lastModified: true,
+  cacheControl: true,
+  immutable: true,
+  maxAge: '30 mins',
   dotFiles: 'ignore',
 })
 
