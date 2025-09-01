@@ -91,7 +91,7 @@ export default class UsersController {
       })
     }
 
-    const orders = await ordersQuery.exec()
+    const orders = await ordersQuery.orderBy('created_at', 'desc').exec()
 
     return response.json(orders)
   }
