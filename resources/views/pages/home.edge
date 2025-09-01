@@ -2,7 +2,7 @@
   @slot('main')
     <div x-data="HomeFetcher()" x-init="loadData()" class="flex flex-col h-screen">
       <!-- Header -->
-      @include('components/header')
+      @!component('components/header', { showSearch: true })
 
       <div class="flex flex-1 overflow-hidden">
         <!-- Sidebar -->

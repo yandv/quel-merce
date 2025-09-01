@@ -1,0 +1,185 @@
+@layout.app()
+  @slot('main')
+    <div
+      x-data="VerifyEmailPage()"
+      class="min-h-screen bg-gray-50 flex flex-col justify-center py-3 sm:px-6 lg:px-8"
+    >
+      <div class="sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="text-center">
+          <a href="/" class="text-3xl font-bold text-orange-600">QuelMerce - AutoPeças</a>
+          <h2 class="mt-3 text-3xl font-extrabold text-gray-900">
+            Verifique seu email
+          </h2>
+          <p class="mt-2 text-sm text-gray-600">
+            Para continuar usando sua conta, você precisa verificar seu endereço de email
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-4 sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <!-- Ícone de email -->
+          <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-orange-100 mb-6">
+            <svg class="h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          </div>
+
+          <!-- Mensagem principal -->
+          <div class="text-center mb-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-2">
+              Email de verificação enviado!
+            </h3>
+            <p class="text-sm text-gray-600">
+              Enviamos um link de verificação para o seu email. Clique no link para ativar sua conta.
+            </p>
+          </div>
+
+          <!-- Mensagens de feedback -->
+          <div x-show="errorMessage" class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            <span x-text="errorMessage"></span>
+          </div>
+
+          <div
+            x-show="successMessage"
+            class="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded"
+          >
+            <span x-text="successMessage"></span>
+          </div>
+
+          <!-- Botão de reenvio -->
+          <div class="space-y-4">
+            <button
+              @click="resendEmail"
+              :disabled="isResendDisabled || isLoading"
+              class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span x-show="!isLoading && !isResendDisabled">Reenviar email</span>
+              <span x-show="isLoading">Enviando...</span>
+              <span x-show="isResendDisabled" x-text="`Reenviar em ${formatTime(resendCountdown)}`"></span>
+            </button>
+
+            <!-- Cronômetro visual -->
+            <div x-show="isResendDisabled" class="text-center">
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  class="bg-orange-600 h-2 rounded-full transition-all duration-1000 ease-linear"
+                  :style="`width: ${(resendCountdown / 300) * 100}%`"
+                ></div>
+              </div>
+              <p class="text-xs text-gray-500 mt-2">
+                Aguarde para reenviar o email
+              </p>
+            </div>
+          </div>
+
+          <!-- Links úteis -->
+          <div class="mt-6 text-center">
+            <p class="text-sm text-gray-600">
+              Não recebeu o email? Verifique sua pasta de spam ou
+              <a href="#" class="font-medium text-orange-600 hover:text-orange-500">
+                entre em contato conosco
+              </a>
+            </p>
+          </div>
+
+          <!-- Botão de voltar -->
+          <div class="mt-6">
+            <a
+              href="/"
+              class="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+            >
+              Voltar para o início
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function VerifyEmailPage() {
+        return {
+          isLoading: false,
+          errorMessage: "",
+          successMessage: "",
+          isResendDisabled: false,
+          resendCountdown: 300, // 5 minutos em segundos
+          countdownInterval: null,
+
+          init() {
+            // Iniciar o cronômetro quando a página carregar
+            this.startCountdown();
+          },
+
+          clearMessages() {
+            this.errorMessage = "";
+            this.successMessage = "";
+          },
+
+          showError(message) {
+            this.errorMessage = message;
+            this.successMessage = "";
+          },
+
+          showSuccess(message) {
+            this.successMessage = message;
+            this.errorMessage = "";
+          },
+
+          formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+          },
+
+          startCountdown() {
+            this.isResendDisabled = true;
+            this.resendCountdown = 300;
+            
+            this.countdownInterval = setInterval(() => {
+              this.resendCountdown--;
+              
+              if (this.resendCountdown <= 0) {
+                this.stopCountdown();
+              }
+            }, 1000);
+          },
+
+          stopCountdown() {
+            if (this.countdownInterval) {
+              clearInterval(this.countdownInterval);
+              this.countdownInterval = null;
+            }
+            this.isResendDisabled = false;
+            this.resendCountdown = 300;
+          },
+
+          async resendEmail() {
+            if (this.isResendDisabled || this.isLoading) {
+              return;
+            }
+
+            this.isLoading = true;
+            this.clearMessages();
+
+            try {
+              // Simular envio de email (será implementado posteriormente)
+              await new Promise(resolve => setTimeout(resolve, 1000));
+              
+              this.showSuccess("Email de verificação reenviado com sucesso!");
+              
+              // Reiniciar o cronômetro
+              this.startCountdown();
+              
+            } catch (error) {
+              console.error("Erro ao reenviar email:", error);
+              this.showError("Erro ao reenviar email. Tente novamente.");
+            } finally {
+              this.isLoading = false;
+            }
+          }
+        };
+      }
+    </script>
+  @endslot
+@end

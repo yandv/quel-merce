@@ -361,7 +361,7 @@
                 this.showSuccess("Login realizado com sucesso!");
                 // Redirecionar após um breve delay para mostrar a mensagem
                 setTimeout(() => {
-                  window.location.href = this.getRedirectUrl();
+                  window.location.href = "/verify-email?redirectTo=" + this.getRedirectUrl();
                 }, 1e3);
               } else {
                 const errorData = await response.json();

@@ -12,6 +12,12 @@ const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
   passwordColumnName: 'password',
 })
 
+export enum UserRole {
+  ADMIN = 'ADMIN',
+  CUSTOMER = 'CUSTOMER',
+  USER = 'USER',
+}
+
 export default class User extends compose(BaseModel, AuthFinder) {
   @column({ isPrimary: true })
   declare id: string
@@ -27,6 +33,12 @@ export default class User extends compose(BaseModel, AuthFinder) {
 
   @column({ serializeAs: null })
   declare password: string
+
+  @column()
+  declare emailVerifiedAt: DateTime | null
+
+  @column()
+  declare role: UserRole
 
   @manyToMany(() => Vehicle, {
     pivotTable: 'user_vehicles',

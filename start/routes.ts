@@ -30,6 +30,7 @@ router
   .group(() => {
     router.on('/checkout/:id').render('pages/checkout')
     router.on('/my-profile').render('pages/my-profile')
+    router.on('/verify-email').render('pages/verify-email')
   })
   .middleware(middleware.auth())
 
