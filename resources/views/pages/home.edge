@@ -2,71 +2,7 @@
   @slot('main')
     <div x-data="HomeFetcher()" x-init="loadData()" class="flex flex-col h-screen">
       <!-- Header -->
-      <header class="bg-orange-100 shadow-md">
-        <div class="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
-          <div class="flex items-center space-x-2">
-            <span class="font-bold text-lg">QuelMerce</span>
-          </div>
-
-          <div class="flex-1 px-6">
-            <input
-              type="text"
-              placeholder="Pesquisar peça por nome..."
-              x-model="search"
-              @input="onSearchInput"
-              @keyup.enter="onSearchEnter"
-              class="w-full px-4 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-orange-400 focus:outline-none"
-            />
-          </div>
-
-          <div class="flex items-center space-x-6">
-            <button
-              class="relative"
-              @click="$store.cart.toggle()"
-              x-bind:class="$store.cart.items.length > 0 ? 'text-orange-500' : 'text-gray-700'"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-6 w-6 text-gray-700"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4" />
-              </svg>
-
-              <span
-                x-show="(() => {
-                  return $store.cart.items.reduce((count, item) => count + item.quantity, 0) > 0
-                })()"
-                x-text="(() => {
-                  return $store.cart.items.reduce((count, item) => count + item.quantity, 0)
-                })()"
-                class="absolute -top-2 -right-2 bg-orange-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full shadow"
-              ></span>
-            </button>
-            <a href="/login">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-6 w-6 text-gray-700"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M5.121 17.804A9 9 0 1118.879 6.196"
-                />
-              </svg>
-            </a>
-          </div>
-        </div>
-      </header>
-
-      <!-- Cart Drawer Component -->
-      @include('components/cart-drawer')
+      @include('components/header')
 
       <div class="flex flex-1 overflow-hidden">
         <!-- Sidebar -->
@@ -173,7 +109,10 @@
                   </a>
                   <button
                     class="mt-2 w-full bg-orange-500 text-white py-2 rounded-lg hover:bg-orange-600"
-                    @click="$store.cart.addItem(product)"
+                    @click="() => {
+                      $store.cart.addItem(product)
+                      $store.toast.toast('Produto adicionado ao carrinho', 'success')
+                    }"
                   >Adicionar ao carrinho</button>
                 </div>
               </template>
@@ -196,7 +135,7 @@
                   @click="changePage(page - 1)"
                 >Anterior</button>
 
-                <span class="text-sm">Página <span x-text="page"></span>de <span x-text="totalPages"></span></span>
+                <span class="text-sm">Página <span x-text="page"></span>{{ ' de ' }}<span x-text="totalPages"></span></span>
 
                 <button
                   class="px-3 py-1 border rounded-lg bg-gray-100 hover:bg-gray-200"

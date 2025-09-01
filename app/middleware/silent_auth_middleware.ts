@@ -8,11 +8,13 @@ import type { NextFn } from '@adonisjs/core/types/http'
  * The request continues as usual, even when the user is not logged-in.
  */
 export default class SilentAuthMiddleware {
-  async handle(
-    ctx: HttpContext,
-    next: NextFn,
-  ) {
+  async handle(ctx: HttpContext, next: NextFn) {
     await ctx.auth.check()
+
+    ctx.view.share({
+      user: ctx.auth.user,
+      isLoggedIn: !!ctx.auth.user,
+    })
 
     return next()
   }

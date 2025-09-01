@@ -2,41 +2,15 @@
   @slot('main')
     <div x-data="CartPage()" x-init="loadData()" class="min-h-screen bg-gray-50">
       <!-- Header -->
-      <header class="bg-white shadow-sm border-b">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="flex items-center justify-between h-16">
-            <div class="flex items-center">
-              <a href="/" class="text-xl font-bold text-orange-600">QuelMerce</a>
-            </div>
-            <nav class="flex space-x-8">
-              <a href="/" class="text-gray-500 hover:text-gray-700">Voltar às Compras</a>
-            </nav>
-          </div>
-        </div>
-      </header>
+      @include('components/header')
 
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" x-show="$store.cart.items.length > 0">
         <div class="lg:grid lg:grid-cols-12 lg:gap-x-12 lg:items-start xl:gap-x-16">
           <!-- Lista de itens -->
           <div class="lg:col-span-7">
-            <h1 class="text-3xl font-extrabold text-gray-900 mb-8">Carrinho de Compras</h1>
-            
-            <!-- Carrinho vazio -->
-            <div x-show="$store.cart.items.length === 0" class="text-center py-12">
-              <svg class="mx-auto h-24 w-24 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4" />
-              </svg>
-              <h3 class="mt-4 text-lg font-medium text-gray-900">Seu carrinho está vazio</h3>
-              <p class="mt-2 text-sm text-gray-500">Adicione alguns produtos para começar suas compras.</p>
-              <div class="mt-6">
-                <a
-                  href="/"
-                  class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700"
-                >
-                  Continuar Comprando
-                </a>
-              </div>
-            </div>
+            <h1 class="text-3xl font-extrabold text-gray-900 mb-8">
+              Carrinho de Compras
+            </h1>
 
             <!-- Itens do carrinho -->
             <div x-show="$store.cart.items.length > 0" class="space-y-6">
@@ -44,18 +18,20 @@
                 <div class="flex space-x-4 py-6 border-b border-gray-200">
                   <!-- Imagem do produto -->
                   <div class="flex-shrink-0">
-                    <img 
-                      x-bind:src="item.thumbnailUrl || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aT0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0zMiAzNkMyOC42ODYzIDM2IDI2IDMzLjMxMzcgMjYgMzBDMjYgMjYuNjg2MyAyOC42ODYzIDI0IDMyIDI0QzM1LjMxMzcgMjQgMzggMjYuNjg2MyAzOCAzMEMzOCAzMy4zMTM3IDM1LjMxMzcgMzYgMzIgMzZaIiBmaWxsPSIjOUI5QkEwIi8+CjxwYXRoIGQ9Ik0yMCA0OEg0NEM0Ni4yMDkxIDQ4IDQ4IDQ2LjIwOTEgNDggNDRWMjBDNDggMTcuNzkwOSA0Ni4yMDkxIDE2IDQ0IDE2SDIwQzE3Ljc5MDkgMTYgMTYgMTcuNzkwOSAxNiAyMFY0NEMxNiA0Ni4yMDkxIDE3Ljc5MDkgNDggMjAgNDhaIiBzdHJva2U9IiM5QjlCQTAiIHN0cm9rZS13aWR0aD0iMiIvPgo8L3N2Zz4K'" 
+                    <img
+                      x-bind:src="item.thumbnailUrl || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aT0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0zMiAzNkMyOC42ODYzIDM2IDI2IDMzLjMxMzcgMjYgMzBDMjYgMjYuNjg2MyAyOC42ODYzIDI0IDMyIDI0QzM1LjMxMzcgMjQgMzggMjYuNjg2MyAzOCAzMEMzOCAzMy4zMTM3IDM1LjMxMzcgMzYgMzIgMzZaIiBmaWxsPSIjOUI5QkEwIi8+CjxwYXRoIGQ9Ik0yMCA0OEg0NEM0Ni4yMDkxIDQ4IDQ4IDQ2LjIwOTEgNDggNDRWMjBDNDggMTcuNzkwOSA0Ni4yMDkxIDE2IDQ0IDE2SDIwQzE3Ljc5MDkgMTYgMTYgMTcuNzkwOSAxNiAyMFY0NEMxNiA0Ni4yMDkxIDE3Ljc5MDkgNDggMjAgNDhaIiBzdHJva2U9IiM5QjlCQTAiIHN0cm9rZS13aWR0aD0iMiIvPgo8L3N2Zz4K'"
                       x-bind:alt="item.name"
                       class="w-24 h-24 object-cover rounded-lg bg-gray-100"
                     />
                   </div>
-                  
+
                   <!-- Informações do produto -->
                   <div class="flex-1 min-w-0">
-                    <h3 class="text-lg font-medium text-gray-900" x-text="item.name"></h3>
-                    <p class="mt-1 text-sm text-gray-500" x-show="item.description" x-text="item.description"></p>
-                    
+                    <h3 class="text-lg font-medium text-gray-900" x-text="item.name">
+                    </h3>
+                    <p class="mt-1 text-sm text-gray-500" x-show="item.description" x-text="item.description">
+                    </p>
+
                     <!-- Controles de quantidade -->
                     <div class="flex items-center space-x-3 mt-4">
                       <label class="text-sm font-medium text-gray-700">Quantidade:</label>
@@ -68,9 +44,9 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
                           </svg>
                         </button>
-                        
+
                         <span class="text-lg font-medium text-gray-900 w-12 text-center" x-text="item.quantity"></span>
-                        
+
                         <button
                           @click="$store.cart.updateQuantity(item, item.quantity + 1)"
                           class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-50"
@@ -82,18 +58,22 @@
                       </div>
                     </div>
                   </div>
-                  
+
                   <!-- Preço e botão remover -->
                   <div class="flex flex-col items-end space-y-4">
                     <p class="text-lg font-medium text-gray-900">
-                      R$ <span x-text="((item.price || 0) * item.quantity).toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span>
+                      R$ <span
+                        x-text="((item.price || 0) * item.quantity).toLocaleString('pt-BR', { minimumFractionDigits: 2 })"
+                      ></span>
                     </p>
-                    <button
-                      @click="$store.cart.removeItem(item)"
-                      class="text-gray-400 hover:text-red-500"
-                    >
+                    <button @click="$store.cart.removeItem(item)" class="text-gray-400 hover:text-red-500">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
                       </svg>
                     </button>
                   </div>
@@ -105,8 +85,10 @@
           <!-- Resumo do pedido -->
           <div x-show="$store.cart.items.length > 0" class="mt-16 lg:mt-0 lg:col-span-5">
             <div class="bg-white border border-gray-200 rounded-lg p-6 sticky top-8">
-              <h2 class="text-lg font-medium text-gray-900 mb-6">Resumo do Pedido</h2>
-              
+              <h2 class="text-lg font-medium text-gray-900 mb-6">
+                Resumo do Pedido
+              </h2>
+
               <!-- Cupom -->
               <div class="mb-6">
                 <label for="coupon" class="block text-sm font-medium text-gray-700 mb-2">Cupom de desconto</label>
@@ -127,32 +109,78 @@
               <div class="space-y-4 border-t border-gray-200 pt-4">
                 <div class="flex justify-between text-sm">
                   <span class="text-gray-600">Subtotal:</span>
-                  <span class="font-medium">R$ <span x-text="(() => {
+                  <span class="font-medium">R$ <span
+                      x-text="(() => {
                     return $store.cart.items.reduce((total, item) => {
                       return total + ((item.price || 0) * item.quantity)
                     }, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })
-                  })()"></span></span>
+                  })()"
+                    ></span></span>
                 </div>
                 <div class="flex justify-between text-sm">
                   <span class="text-gray-600">Frete:</span>
-                  <span class="font-medium">Calculando...</span>
+                  <span class="font-medium">Não vou implementar...</span>
                 </div>
                 <div class="flex justify-between text-lg font-medium border-t border-gray-200 pt-4">
                   <span>Total:</span>
-                  <span>R$ <span x-text="(() => {
+                  <span>R$ <span
+                      x-text="(() => {
                     return $store.cart.items.reduce((total, item) => {
                       return total + ((item.price || 0) * item.quantity)
                     }, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })
-                  })()"></span></span>
+                  })()"
+                    ></span></span>
                 </div>
               </div>
 
               <!-- Botão finalizar compra -->
-              <button class="w-full bg-orange-600 text-white py-3 px-4 rounded-md text-sm font-medium hover:bg-orange-700 mt-6">
-                Finalizar Compra
+              <button
+                class="w-full bg-orange-600 text-white py-3 px-4 rounded-md text-sm font-medium hover:bg-orange-700 mt-6"
+                @click="createOrder($store.cart.items, 'PIX')"
+                x-bind:disabled="isCreatingOrder"
+                x-bind:class="{ 'opacity-50 cursor-not-allowed': isCreatingOrder }"
+              >
+                <span x-show="!isCreatingOrder">Finalizar Compra</span>
+                <span x-show="isCreatingOrder" class="flex items-center gap-2">
+                  <svg
+                    class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  Finalizando compra...
+                </span>
               </button>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Carrinho vazio -->
+      <div x-show="$store.cart.items.length === 0" class="text-center py-12">
+        <svg class="mx-auto h-24 w-24 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4" />
+        </svg>
+        <h3 class="mt-4 text-lg font-medium text-gray-900">
+          Seu carrinho está vazio
+        </h3>
+        <p class="mt-2 text-sm text-gray-500">
+          Adicione alguns produtos para começar suas compras.
+        </p>
+        <div class="mt-6">
+          <a
+            href="/"
+            class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700"
+          >
+            Continuar Comprando
+          </a>
         </div>
       </div>
     </div>
@@ -160,8 +188,37 @@
     <script>
       function CartPage() {
         return {
+          isCreatingOrder: false,
           loadData() {
             // A página carrega automaticamente os dados do carrinho do store
+          },
+          async createOrder(items, paymentMethod) {
+            this.isCreatingOrder = true;
+            try {
+              const response = await fetch("/api/orders", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Accept: "application/json",
+                  "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                  items: items.map(item => ({
+                    productId: item.id,
+                    quantity: item.quantity
+                  })),
+                  paymentMethod: paymentMethod
+                })
+              });
+              if (response.ok) {
+                const data = await response.json();
+                window.location.href = "/checkout/" + data.id;
+              }
+            } catch (error) {
+              console.error("Erro no pedido:", error);
+            } finally {
+              this.isCreatingOrder = false;
+            }
           }
         };
       }

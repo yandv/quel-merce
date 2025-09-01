@@ -17,6 +17,6 @@ export const productQueryValidator = vine.compile(
 
 export const productIdValidator = vine.compile(
   vine.object({
-    id: vine.string(),
+    id: vine.string().uuid(),
   })
 )

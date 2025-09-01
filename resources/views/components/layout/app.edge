@@ -15,6 +15,8 @@
     <meta name="bingbot" content="index, follow" />
     <meta name="yandexbot" content="index, follow" />
 
+    <meta name="csrf-token" content="{{ csrfToken }}" />
+
     <link rel="preconnect" href="https://fonts.bunny.net" />
     <link
       href="https://fonts.bunny.net/css?family=instrument-sans:400,400i,500,500i,600,600i,700,700i"
@@ -67,6 +69,8 @@
 
   <body class="min-h-screen w-screen font-sans">
     {{{ await $slots.main() }}}
+    
+    @include('components/toast')
   </body>
 
 </html>

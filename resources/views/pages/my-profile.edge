@@ -1,0 +1,429 @@
+@layout.app()
+  @slot('main')
+    <div x-data="ProfileManager()" x-init="loadProfile()" class="min-h-screen bg-gray-50">
+      <!-- Header -->
+      @include('components/header')
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Profile Section -->
+        <div class="bg-white rounded-lg shadow-sm border p-6 mb-8">
+          <h1 class="text-2xl font-bold text-gray-900 mb-6">
+            Meu Perfil
+          </h1>
+
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Profile Picture Section -->
+            <div class="lg:col-span-1">
+              <div class="text-center">
+                <div class="relative inline-block">
+                  <img
+                    :src="profile.avatarUrl || '/default-avatar.png'"
+                    alt="Foto de perfil"
+                    class="w-32 h-32 rounded-full object-cover object-center border-4 border-orange-100 shadow-lg"
+                  />
+                  <button
+                    @click="showImageUpload = true"
+                    class="absolute bottom-0 right-0 bg-orange-500 text-white p-2 rounded-full shadow-lg hover:bg-orange-600 transition-colors"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                      />
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- Image Upload Modal -->
+                <div
+                  x-show="showImageUpload"
+                  class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+                  style="display: none;"
+                >
+                  <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                    <div class="mt-3 text-center">
+                      <h3 class="text-lg font-medium text-gray-900 mb-4">
+                        Alterar Foto de Perfil
+                      </h3>
+                      <div class="mt-2 px-7 py-3">
+                        <input
+                          type="url"
+                          x-model="newAvatarUrl"
+                          placeholder="URL da imagem"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        />
+                      </div>
+                      <div class="flex justify-center space-x-3 mt-4">
+                        <button
+                          @click="updateAvatar()"
+                          class="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors"
+                        >
+                          Salvar
+                        </button>
+                        <button
+                          @click="showImageUpload = false"
+                          class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Profile Info Section -->
+            <div class="lg:col-span-2">
+              <form @submit.prevent="updateProfile" class="space-y-6">
+                <div>
+                  <label for="fullName" class="block text-sm font-medium text-gray-700 mb-2">
+                    Nome Completo
+                  </label>
+                  <input
+                    type="text"
+                    id="fullName"
+                    x-model="profile.fullName"
+                    :class="{
+                      'border-red-300 focus:ring-red-500': profile.fullName && profile.fullName.trim().length === 0,
+                      'border-gray-300 focus:ring-orange-500': !profile.fullName || profile.fullName.trim().length > 0
+                    }"
+                    class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 transition-colors"
+                    placeholder="Digite seu nome completo"
+                  />
+                  <p
+                    x-show="profile.fullName && profile.fullName.trim().length === 0"
+                    class="text-sm text-red-600 mt-1"
+                  >
+                    O nome não pode estar vazio
+                  </p>
+                </div>
+
+                <div>
+                  <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    :value="profile.email"
+                    disabled
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500 cursor-not-allowed"
+                  />
+                </div>
+
+                <div class="flex justify-end items-center space-x-3">
+                  <div x-show="hasChanges()" class="text-sm text-orange-600 flex items-center space-x-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+                      />
+                    </svg>
+                    <span>Alterações não salvas</span>
+                  </div>
+                  <button
+                    x-show="hasChanges()"
+                    @click="resetChanges()"
+                    type="button"
+                    class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    :disabled="isUpdating || !hasChanges()"
+                    class="px-6 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <span x-show="!isUpdating">Salvar Alterações</span>
+                    <span x-show="isUpdating">Salvando...</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Orders Section -->
+        <div class="bg-white rounded-lg shadow-sm border p-6">
+          <h2 class="text-xl font-semibold text-gray-900 mb-6">
+            Meus Pedidos
+          </h2>
+
+          <!-- Loading State -->
+          <div x-show="isLoadingOrders" class="text-center py-8">
+            <div class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-orange-500">
+              <svg
+                class="animate-spin -ml-1 mr-3 h-5 w-5 text-orange-500"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+
+              </svg>
+              Carregando pedidos...
+            </div>
+          </div>
+
+          <!-- Orders List -->
+          <div x-show="!isLoadingOrders" class="space-y-4">
+            <template x-if="orders.length === 0">
+              <div class="text-center py-8 text-gray-500">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                  />
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">
+                  Nenhum pedido encontrado
+                </h3>
+                <p class="mt-1 text-sm text-gray-500">
+                  Comece fazendo suas compras!
+                </p>
+                <div class="mt-6">
+                  <a
+                    href="/"
+                    class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700"
+                  >
+                    Ir às compras
+                  </a>
+                </div>
+              </div>
+            </template>
+
+            <template x-for="order in orders" :key="order.id">
+              <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div class="flex justify-between items-start">
+                  <div class="flex-1">
+                    <div class="flex items-center space-x-3 mb-2">
+                      <span class="text-sm font-medium text-gray-900" x-text="`Pedido ${order.id}`"></span>
+                      <span
+                        class="px-2 py-1 text-xs font-medium rounded-full"
+                        :class="{
+                          'bg-green-100 text-green-800': order.paymentStatus === 'PAID',
+                          'bg-yellow-100 text-yellow-800': order.paymentStatus === 'PENDING',
+                          'bg-red-100 text-red-800': order.paymentStatus === 'CANCELLED'
+                        }"
+                        x-text="getPaymentStatusText(order.paymentStatus)"
+                      ></span>
+                    </div>
+                    <p class="text-sm text-gray-600" x-text="`Criado em ${formatDate(order.createdAt)}`">
+                    </p>
+                    <p class="text-sm text-gray-600" x-text="`Método: ${getPaymentMethodText(order.paymentMethod)}`">
+                    </p>
+                    <p class="text-sm text-gray-600" x-text="`Total: R$ ${calculateOrderTotal(order).toFixed(2)}`">
+                    </p>
+                    <p class="text-sm text-gray-600" x-text="`Itens: ${order.items?.length || 0}`">
+                    </p>
+                  </div>
+                  <button
+                    @click="goToCheckout(order.id)"
+                    class="px-4 py-2 bg-orange-500 text-white text-sm rounded-md hover:bg-orange-600 transition-colors"
+                  >
+                    Ver Detalhes
+                  </button>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function ProfileManager() {
+        return {
+          profile: {
+            id: "",
+            fullName: "",
+            email: "",
+            avatarUrl: ""
+          },
+          originalProfile: {
+            id: "",
+            fullName: "",
+            email: "",
+            avatarUrl: ""
+          },
+          orders: [],
+          newAvatarUrl: "",
+          showImageUpload: false,
+          isUpdating: false,
+          isLoadingOrders: false,
+          async loadProfile() {
+            try {
+              const response = await fetch(`/api/users/${this.getCurrentUserId()}`);
+              if (response.ok) {
+                this.profile = await response.json();
+                this.originalProfile = {
+                  ...this.profile
+                }; // Armazena os dados originais
+                this.loadOrders();
+              }
+            } catch (error) {
+              console.error("Erro ao carregar perfil:", error);
+              this.showNotification("Erro ao carregar perfil", "error");
+            }
+          },
+          async loadOrders() {
+            this.isLoadingOrders = true;
+            try {
+              const response = await fetch(`/api/users/${this.getCurrentUserId()}/orders?includes=items`);
+              if (response.ok) {
+                this.orders = await response.json();
+              }
+            } catch (error) {
+              console.error("Erro ao carregar pedidos:", error);
+              this.showNotification("Erro ao carregar pedidos", "error");
+            } finally {
+              this.isLoadingOrders = false;
+            }
+          },
+          async updateProfile() {
+            this.isUpdating = true;
+            try {
+              const response = await fetch(`/api/users/${this.profile.id}`, {
+                method: "PATCH",
+                headers: {
+                  "Content-Type": "application/json",
+                  "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                  fullName: this.profile.fullName
+                })
+              });
+              if (response.ok) {
+                const result = await response.json();
+                this.profile = {
+                  ...this.profile,
+                  ...result.user
+                };
+                this.originalProfile = {
+                  ...this.profile
+                }; // Atualiza os dados originais
+                this.showNotification("Perfil atualizado com sucesso!", "success");
+              } else {
+                const error = await response.json();
+                this.showNotification(error.message || "Erro ao atualizar perfil", "error");
+              }
+            } catch (error) {
+              console.error("Erro ao atualizar perfil:", error);
+              this.showNotification("Erro ao atualizar perfil", "error");
+            } finally {
+              this.isUpdating = false;
+            }
+          },
+          async updateAvatar() {
+            if (!this.newAvatarUrl.trim()) {
+              this.showNotification("Por favor, insira uma URL válida", "error");
+              return;
+            }
+            try {
+              const response = await fetch(`/api/users/${this.profile.id}`, {
+                method: "PATCH",
+                headers: {
+                  "Content-Type": "application/json",
+                  "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                  avatarUrl: this.newAvatarUrl.trim()
+                })
+              });
+              if (response.ok) {
+                const result = await response.json();
+                this.profile.avatarUrl = result.user.avatarUrl;
+                this.originalProfile.avatarUrl = result.user.avatarUrl; // Atualiza os dados originais
+                this.newAvatarUrl = "";
+                this.showImageUpload = false;
+                this.showNotification("Foto de perfil atualizada com sucesso!", "success");
+              } else {
+                const error = await response.json();
+                this.showNotification(error.message || "Erro ao atualizar foto", "error");
+              }
+            } catch (error) {
+              console.error("Erro ao atualizar foto:", error);
+              this.showNotification("Erro ao atualizar foto", "error");
+            }
+          },
+          goToCheckout(orderId) {
+            window.location.href = `/checkout/${orderId}`;
+          },
+          getCurrentUserId() {
+            // Extrair o ID do usuário do contexto da página
+            // Isso deve ser passado pelo backend
+            return "{{ auth.user?.id }}";
+          },
+          calculateOrderTotal(order) {
+            if (!order.items || order.items.length === 0) return 0;
+            return order.items.reduce((total, item) => total + item.price * item.quantity, 0);
+          },
+          formatDate(dateString) {
+            if (!dateString) return "Data não disponível";
+            const date = new Date(dateString);
+            return date.toLocaleDateString("pt-BR", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit"
+            });
+          },
+          getPaymentStatusText(status) {
+            const statusMap = {
+              PENDING: "Pagamento pendente",
+              PAID: "Pago",
+              CANCELLED: "Cancelado",
+              CHARGED_BACK: "Pedido"
+            };
+            return statusMap[status] || status;
+          },
+          getPaymentMethodText(method) {
+            const methodMap = {
+              PIX: "PIX",
+              CREDIT_CARD: "Cartão de Crédito",
+              DEBIT_CARD: "Cartão de Débito"
+            };
+            return methodMap[method] || method;
+          },
+          showNotification(message, type) {
+            window.Alpine.store("toast").toast(message, type, 3e3, "success");
+          },
+          hasChanges() {
+            // Verifica se há alterações no nome ou na foto
+            const nameChanged = this.profile.fullName !== this.originalProfile.fullName;
+            const avatarChanged = this.profile.avatarUrl !== this.originalProfile.avatarUrl;
+            // Só considera alterações válidas se o nome não estiver vazio
+            const isValidName = this.profile.fullName && this.profile.fullName.trim().length > 0;
+            return nameChanged && isValidName || avatarChanged;
+          },
+          resetChanges() {
+            this.profile = {
+              ...this.originalProfile
+            };
+            this.newAvatarUrl = "";
+            this.showImageUpload = false;
+            this.showNotification("Alterações canceladas.", "info");
+          },
+          onProfileChange() {
+            // Esta função é chamada sempre que há uma mudança no perfil
+            // Pode ser usada para validações adicionais em tempo real
+          }
+        };
+      }
+    </script>
+  @endslot
+@end

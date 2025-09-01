@@ -1,6 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import Product from '#models/product'
 import { productQueryValidator, productIdValidator } from '#validators/product_validator'
+import Category from '#models/category'
 
 export default class ProductsController {
   /**
@@ -176,32 +177,34 @@ export default class ProductsController {
    * GET /products/:id
    * Obtém um produto específico por ID
    */
-  async getProduct({ params, request, response }: HttpContext) {
+  async getProductById({ params, response }: HttpContext) {
     const { id } = await productIdValidator.validate(params)
-    const { includes } = await productQueryValidator.validate(request.all())
 
     const query = Product.query().where('id', id)
 
-    // Processar includes
-    const includeArray = includes ? includes.split(',').map((item) => item.trim()) : []
+    query.preload('category')
 
-    if (includeArray.includes('category')) {
-      query.preload('category')
-    }
-
-    if (includeArray.includes('years')) {
-      query.preload('years', (yearQuery) => {
-        yearQuery.preload('model', (modelQuery) => {
-          modelQuery.preload('brand')
-        })
+    query.preload('years', (yearQuery) => {
+      yearQuery.preload('model', (modelQuery) => {
+        modelQuery.preload('brand')
       })
-    }
+    })
 
     const product = await query.first()
 
     if (!product) {
       return response.status(404).json({ error: 'Produto não encontrado' })
     }
+
+    async function loadParents(category: Category | null) {
+      if (!category) return
+      await category.load('parent')
+      if (category.parent) {
+        await loadParents(category.parent)
+      }
+    }
+
+    await loadParents(product.category)
 
     return response.json(product)
   }

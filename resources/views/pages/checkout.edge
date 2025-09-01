@@ -1,0 +1,334 @@
+@layout.app()
+  @slot('main')
+    <div x-data="CheckoutPage()" x-init="loadOrder()" class="min-h-screen bg-gray-50">
+      <!-- Header -->
+      @include('components/header')
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Loading state -->
+        <div x-show="loading" class="text-center py-12">
+          <svg
+            class="mx-auto h-12 w-12 text-orange-600 animate-spin"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
+          </svg>
+          <p class="mt-4 text-lg text-gray-600">
+            Carregando dados do pedido...
+          </p>
+        </div>
+
+        <!-- Error state -->
+        <div x-show="error" class="text-center py-12">
+          <svg class="mx-auto h-12 w-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+            />
+          </svg>
+          <h3 class="mt-4 text-lg font-medium text-gray-900">
+            Erro ao carregar pedido
+          </h3>
+          <p class="mt-2 text-sm text-gray-500" x-text="error">
+          </p>
+          <div class="mt-6">
+            <a
+              href="/cart"
+              class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700"
+            >
+              Voltar ao Carrinho
+            </a>
+          </div>
+        </div>
+
+        <!-- Checkout content -->
+        <div x-show="!loading && !error && order" class="space-y-8">
+          <!-- PIX Payment -->
+          <div
+            x-show="order.paymentMethod === 'PIX' && order.paymentStatus === 'PENDING'"
+            class="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+          >
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">
+              Pagamento via PIX
+            </h2>
+
+            <div class="text-center space-y-6">
+              <!-- QR Code -->
+              <div class="flex justify-center">
+                <div class="bg-gray-100 p-4 rounded-lg">
+                  <div id="qrcode" class="w-64 h-64 bg-white p-4 rounded-lg shadow-sm">
+                  </div>
+                </div>
+              </div>
+
+              <!-- PIX Instructions -->
+              <div class="max-w-md mx-auto space-y-4">
+                <h3 class="text-lg font-medium text-gray-900">
+                  Como pagar:
+                </h3>
+                <ol class="text-left text-sm text-gray-600 space-y-2">
+                  <li class="flex items-start space-x-2">
+                    <span
+                      class="flex-shrink-0 w-5 h-5 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs font-medium"
+                    >1</span>
+                    <span>Abra o app do seu banco ou instituição financeira</span>
+                  </li>
+                  <li class="flex items-start space-x-2">
+                    <span
+                      class="flex-shrink-0 w-5 h-5 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs font-medium"
+                    >2</span>
+                    <span>Escaneie o QR Code acima ou copie o código PIX</span>
+                  </li>
+                  <li class="flex items-start space-x-2">
+                    <span
+                      class="flex-shrink-0 w-5 h-5 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs font-medium"
+                    >3</span>
+                    <span>Confirme o pagamento no valor de <span class="font-medium">R$ <span x-text="getOrderTotal().toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span></span></span>
+                  </li>
+                  <li class="flex items-start space-x-2">
+                    <span
+                      class="flex-shrink-0 w-5 h-5 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs font-medium"
+                    >4</span>
+                    <span>Seu pedido será processado automaticamente após a confirmação</span>
+                  </li>
+                </ol>
+              </div>
+
+              <!-- PIX Code -->
+              <div class="max-w-md mx-auto">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Código PIX (copie e cole):</label>
+                <div class="flex space-x-2">
+                  <input
+                    type="text"
+                    x-bind:value="pixCode"
+                    readonly
+                    class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-50 text-gray-900"
+                  />
+                  <button
+                    @click="copyPixCode()"
+                    class="px-4 py-2 bg-orange-600 text-white rounded-md text-sm hover:bg-orange-700 transition-colors"
+                  >
+                    Copiar
+                  </button>
+                </div>
+              </div>
+
+              <!-- Payment Status -->
+              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div class="flex items-center space-x-2">
+                  <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <span class="text-sm text-blue-800">
+                    Aguardando confirmação do pagamento. Você receberá uma notificação assim que o pagamento for confirmado.
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div
+            x-show="order.paymentStatus === 'PAID'"
+            x-transition
+            class="bg-white rounded-lg shadow-sm border border-green-200 p-6 text-center space-y-4"
+          >
+            <!-- Ícone de sucesso -->
+            <div class="flex justify-center">
+              <div class="bg-green-100 p-6 rounded-full">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-16 w-16 text-green-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </div>
+
+            <!-- Mensagem -->
+            <p class="text-lg font-medium text-green-700">
+              Pagamento realizado com sucesso!
+            </p>
+            <p class="text-sm text-gray-600">
+              Você receberá uma atualização quando seu pedido for enviado.
+            </p>
+          </div>
+
+          <!-- Order summary -->
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h1 class="text-3xl font-bold text-gray-900 mb-6">
+              Resumo do Pedido
+            </h1>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- Order details -->
+              <div>
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">
+                  Detalhes do Pedido
+                </h2>
+                <div class="space-y-3">
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Código do Pedido:</span>
+                    <span class="font-medium" x-text="order.id"></span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Data:</span>
+                    <span class="font-medium" x-text="new Date(order.createdAt).toLocaleDateString('pt-BR')"></span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Status:</span>
+                    <span class="font-medium text-orange-600" x-text="getStatusText(order.paymentStatus)"></span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Método de Pagamento:</span>
+                    <span class="font-medium" x-text="getPaymentMethodText(order.paymentMethod)"></span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Cupom de Desconto:</span>
+                    <span class="font-medium" x-text="order.discountCode || 'Nenhum cupom aplicado'"></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Order items -->
+              <div>
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">
+                  Itens do Pedido
+                </h2>
+                <div class="space-y-3">
+                  <template x-for="item in order.items" :key="item.id">
+                    <div class="flex justify-between items-center">
+                      <a x-bind:href="`/products/${item.product.id}`" class="flex items-center space-x-3">
+                        <img
+                          x-bind:src="item.product.thumbnailUrl || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aT0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0zMiAzNkMyOC42ODYzIDM2IDI2IDMzLjMxMzcgMjYgMzBDMjYgMjYuNjg2MyAyOC42ODYzIDI0IDMyIDI0QzM1LjMxMzcgMjQgMzggMjYuNjg2MyAzOCAzMEMzOCAzMy4zMTM3IDM1LjMxMzcgMzYgMzIgMzZaIiBmaWxsPSIjOUI5QkEwIi8+CjxwYXRoIGQ9Ik0yMCA0OEg0NEM0Ni4yMDkxIDQ4IDQ4IDQ2LjIwOTEgNDggNDRWMjBDNDggMTcuNzkwOSA0Ni4yMDkxIDE2IDQ0IDE2SDIwQzE3Ljc5MDkgMTYgMTYgMTcuNzkwOSAxNiAyMFY0NEMxNiA0Ni4yMDkxIDE3Ljc5MDkgNDggMjAgNDhaIiBzdHJva2U9IiM5QjlCQTAiIHN0cm9rZS13aWR0aD0iMiIvPgo8L3N2Zz4K'"
+                          x-bind:alt="item.product.name"
+                          class="w-8 h-8 object-cover rounded bg-gray-100"
+                        />
+                        <span class="text-sm text-gray-900" x-text="item.product.name"></span>
+                      </a>
+                      <div class="text-right">
+                        <span class="text-sm text-gray-600" x-text="'x' + item.quantity"></span>
+                        <div class="text-sm font-medium text-gray-900">
+                          R$ <span x-text="item.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span>
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </div>
+
+            <!-- Total -->
+            <div class="border-t border-gray-200 pt-4 mt-6">
+              <div class="flex justify-between text-lg font-bold">
+                <span>Sem desconto aplicado.</span>
+              </div>
+              <div class="flex justify-between text-lg font-bold">
+                <span>Total:</span>
+                <span>R$ <span x-text="getOrderTotal().toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span></span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function CheckoutPage() {
+        return {
+          loading: true,
+          error: null,
+          order: null,
+          pixCode: "cleber",
+          async loadOrder() {
+            try {
+              const orderId = window.location.pathname.split("/").pop();
+              const response = await fetch(`/api/orders/${orderId}`, {
+                headers: {
+                  Accept: "application/json",
+                  "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
+                }
+              });
+              if (!response.ok) {
+                if (response.status === 401) {
+                  window.location.href = "/login";
+                  return;
+                }
+                const errorData = await response.json();
+                if (errorData.code === "ORDER_NOT_FOUND") {
+                  throw new Error(errorData.message || "Pedido não encontrado");
+                }
+                throw new Error(errorData.message || "Erro ao carregar pedido");
+              }
+              this.order = await response.json();
+              console.log("Order data:", this.order); // Debug log
+            } catch (error) {
+              console.error("Erro:", error);
+              this.error = error.message;
+            } finally {
+              this.loading = false;
+            }
+          },
+          getOrderTotal() {
+            if (!this.order || !this.order.items) return 0;
+            return this.order.items.reduce((total, item) => total + item.price * item.quantity, 0);
+          },
+          getStatusText(status) {
+            const statusMap = {
+              PENDING: "Pendente",
+              PAID: "Pago",
+              CANCELLED: "Cancelado",
+              REFUNDED: "Reembolsado"
+            };
+            return statusMap[status] || status;
+          },
+          getPaymentMethodText(method) {
+            const methodMap = {
+              PIX: "PIX",
+              CREDIT_CARD: "Cartão de Crédito",
+              DEBIT_CARD: "Cartão de Débito",
+              BANK_SLIP: "Boleto Bancário"
+            };
+            return methodMap[method] || method;
+          },
+          copyPixCode() {
+            navigator.clipboard.writeText(this.pixCode).then(() => {
+              // Show success message
+              if (window.Alpine && window.Alpine.store("toast")) {
+                window.Alpine.store("toast").toast("Código PIX copiado!", "success");
+              }
+            }).catch(() => {
+              // Fallback for older browsers
+              const textArea = document.createElement("textarea");
+              textArea.value = this.pixCode;
+              document.body.appendChild(textArea);
+              textArea.select();
+              document.execCommand("copy");
+              document.body.removeChild(textArea);
+              if (window.Alpine && window.Alpine.store("toast")) {
+                window.Alpine.store("toast").toast("Código PIX copiado!", "success");
+              }
+            });
+          }
+        };
+      }
+    </script>
+  @endslot
+@end

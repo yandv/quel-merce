@@ -1,0 +1,20 @@
+<a href="{{ isLoggedIn ? '/my-profile' : '/login' }}">
+  @if(isLoggedIn)
+    <img src="{{ user.avatarUrl }}" class="w-6 h-6 rounded-full object-cover object-center" />
+  @else
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      class="h-6 w-6 text-gray-700"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M5.121 17.804A9 9 0 1118.879 6.196"
+      />
+    </svg>
+  @endif
+</a>

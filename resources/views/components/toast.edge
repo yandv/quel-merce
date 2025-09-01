@@ -1,0 +1,8 @@
+<div class="fixed bottom-4 right-4 flex flex-col space-y-2 items-end z-50" x-data>
+  <template x-for="toast in $store.toast.toasts.slice().reverse()" :key="toast.id">
+    <div class="bg-white rounded-lg shadow-lg p-4 w-64" :class="toast.className">
+      <p class="text-sm text-gray-800" x-text="toast.message">
+      </p>
+    </div>
+  </template>
+</div>

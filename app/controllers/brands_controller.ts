@@ -1,13 +1,10 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import Brand from '#models/brand'
-import Model from '#models/model'
 import Year from '#models/year'
 import {
   brandIdValidator,
-  modelIdValidator,
   brandQueryValidator,
   modelQueryValidator,
-  yearQueryValidator,
   getYearsValidator,
 } from '#validators/brand_validator'
 import BrandNotFoundException from '#exceptions/brand_not_found_exception'
@@ -41,6 +38,7 @@ export default class BrandsController {
     const { name } = await modelQueryValidator.validate(request.all())
 
     const brand = await Brand.find(id)
+
     if (!brand) {
       throw new BrandNotFoundException()
     }
