@@ -5,6 +5,7 @@
 <button
   class="relative"
   @click="$store.cart.toggle()"
+  x-init="$store.cart.init()"
   x-bind:class="$store.cart.items.length > 0 ? 'text-orange-500' : 'text-gray-700'"
 >
   <svg
@@ -18,7 +19,7 @@
   </svg>
 
   <span
-    x-show="$store.cart.items.length > 0"
+    x-show="$store.cart.isInitialized && $store.cart.items.length > 0"
     x-text="$store.cart.items.length"
     class="absolute -top-2 -right-2 bg-orange-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full shadow"
   ></span>

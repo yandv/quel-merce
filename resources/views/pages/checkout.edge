@@ -26,7 +26,7 @@
         </div>
 
         <!-- Error state -->
-        <div x-show="error" class="text-center py-12">
+        <div x-show="error" x-cloak class="text-center py-12">
           <svg class="mx-auto h-12 w-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
@@ -51,7 +51,7 @@
         </div>
 
         <!-- Checkout content -->
-        <div x-show="!loading && !error && order" class="space-y-8">
+        <div x-show="!loading && !error && order" x-cloak class="space-y-8">
           <!-- PIX Payment -->
           <div
             x-show="order.paymentMethod === 'PIX' && order.paymentStatus === 'PENDING'"

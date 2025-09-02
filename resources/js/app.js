@@ -38,6 +38,7 @@ document.addEventListener('alpine:init', () => {
   Alpine.store('cart', {
     items: JSON.parse(localStorage.getItem('cart') || '[]'),
     isDrawerOpen: false,
+    isInitialized: false,
 
     getItems() {
       return this.items
@@ -91,7 +92,16 @@ document.addEventListener('alpine:init', () => {
       localStorage.removeItem('cart')
     },
 
+    init() {
+      if (!this.isInitialized) {
+        this.isInitialized = true
+        // Garantir que o drawer comece fechado
+        this.isDrawerOpen = false
+      }
+    },
+
     toggle() {
+      this.init()
       this.isDrawerOpen = !this.isDrawerOpen
     },
 
