@@ -23,6 +23,8 @@ router
     router.on('/cart').render('pages/cart')
     router.on('/login').render('pages/login')
     router.on('/products/:id').render('pages/product-details')
+    router.on('/verify-email').render('pages/verify-email')
+    router.on('/magic-link/:code').render('pages/magic-link')
   })
   .middleware(middleware.silent_auth())
 
@@ -30,7 +32,6 @@ router
   .group(() => {
     router.on('/checkout/:id').render('pages/checkout')
     router.on('/my-profile').render('pages/my-profile')
-    router.on('/verify-email').render('pages/verify-email')
   })
   .middleware(middleware.auth())
 
@@ -56,6 +57,9 @@ router
         router.post('/login', [UsersController, 'login'])
         router.post('/logout', [UsersController, 'logout'])
         router.post('/', [UsersController, 'register'])
+        router.post('/verify-email/:code', [UsersController, 'verifyEmail'])
+        router.get('/verification-code-status/:email', [UsersController, 'getVerificationCodeStatus'])
+        router.post('/resend-verification-email/:email', [UsersController, 'resendVerificationEmail'])
       })
       .prefix('users')
 

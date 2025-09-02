@@ -1,0 +1,145 @@
+@layout.app()
+  @slot('main')
+    <div
+      x-data="MagicLinkPage()"
+      class="min-h-screen bg-gray-50 flex flex-col justify-center py-3 sm:px-6 lg:px-8"
+    >
+      <div class="sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="text-center">
+          <a href="/" class="text-3xl font-bold text-orange-600">QuelMerce - AutoPeças</a>
+          <h2 class="mt-3 text-3xl font-extrabold text-gray-900">
+            Verificando seu email
+          </h2>
+          <p class="mt-2 text-sm text-gray-600">
+            Aguarde enquanto verificamos seu código de verificação
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-4 sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <!-- Loading spinner -->
+          <div x-show="isLoading" class="text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-orange-100 mb-6">
+              <svg
+                class="animate-spin h-6 w-6 text-orange-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+
+              </svg>
+            </div>
+            <p class="text-sm text-gray-600">
+              Verificando código...
+            </p>
+          </div>
+
+          <!-- Success message -->
+          <div x-show="isSuccess" class="text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-6">
+              <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+
+              </svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">
+              Email verificado com sucesso!
+            </h3>
+            <p class="text-sm text-gray-600 mb-4">
+              Você será redirecionado para a página inicial em alguns instantes.
+            </p>
+          </div>
+
+          <!-- Error message -->
+          <div x-show="isError" class="text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-6">
+              <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+
+              </svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">
+              Código inválido ou expirado
+            </h3>
+            <p class="text-sm text-gray-600 mb-4">
+              O código de verificação não é válido ou já expirou. Verifique seu email ou solicite um novo código.
+            </p>
+            <div class="space-y-3">
+              <a
+                href="/verify-email"
+                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+              >
+                Ir para verificação de email
+              </a>
+              <a
+                href="/"
+                class="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+              >
+                Voltar para o início
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function MagicLinkPage() {
+        return {
+          isLoading: true,
+          isSuccess: false,
+          isError: false,
+          async init() {
+            // Obter o código da URL
+            const pathParts = window.location.pathname.split("/");
+            const code = pathParts[pathParts.length - 1];
+            if (!code) {
+              this.showError();
+              return;
+            }
+            // Verificar o código
+            await this.verifyCode(code);
+          },
+          async verifyCode(code) {
+            try {
+              const response = await fetch(`/api/users/verify-email/${code}`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Accept: "application/json",
+                  "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.content || ""
+                }
+              });
+              if (response.ok) {
+                this.showSuccess();
+              } else {
+                this.showError();
+              }
+            } catch (error) {
+              console.error("Erro ao verificar código:", error);
+              this.showError();
+            }
+          },
+          showSuccess() {
+            this.isLoading = false;
+            this.isSuccess = true;
+            this.isError = false;
+          },
+          showError() {
+            this.isLoading = false;
+            this.isSuccess = false;
+            this.isError = true;
+          }
+        };
+      }
+    </script>
+  @endslot
+@end

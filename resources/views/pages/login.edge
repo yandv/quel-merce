@@ -28,6 +28,15 @@
           <!-- Mensagens de feedback -->
           <div x-show="errorMessage" class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
             <span x-text="errorMessage"></span>
+            <!-- Botão para ir para página de verificação quando email não verificado -->
+            <div x-show="showVerificationPrompt" class="mt-3">
+              <a
+                :href="`/verify-email?email=${encodeURIComponent(loginForm.email)}`"
+                class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+              >
+                Ir para verificação de email
+              </a>
+            </div>
           </div>
 
           <div
@@ -293,6 +302,7 @@
           isLoading: false,
           errorMessage: "",
           successMessage: "",
+          showVerificationPrompt: false,
           loginForm: {
             email: "",
             password: "",
@@ -361,11 +371,21 @@
                 this.showSuccess("Login realizado com sucesso!");
                 // Redirecionar após um breve delay para mostrar a mensagem
                 setTimeout(() => {
-                  window.location.href = "/verify-email?redirectTo=" + this.getRedirectUrl();
+                  window.location.href = this.getRedirectUrl();
                 }, 1e3);
               } else {
                 const errorData = await response.json();
-                this.showError(errorData.message || "Email ou senha inválidos.");
+                
+                // Verificar se é erro de email não verificado
+                if (errorData.code === 'USER_NOT_EMAIL_VERIFIED_YET') {
+                  this.showError("Seu email ainda não foi verificado. Verifique sua caixa de entrada ou reenvie o código de verificação.");
+                  // Salvar email no localStorage para uso na página de verificação
+                  localStorage.setItem('userEmail', this.loginForm.email);
+                  // Mostrar botão para ir para página de verificação
+                  this.showVerificationPrompt = true;
+                } else {
+                  this.showError(errorData.message || "Email ou senha inválidos.");
+                }
               }
             } catch (error) {
               console.error("Erro no login:", error);
@@ -397,8 +417,10 @@
               });
               if (response.ok) {
                 this.showSuccess("Conta criada com sucesso! Você será redirecionado em breve.");
+                // Salvar email no localStorage para uso na página de verificação
+                localStorage.setItem('userEmail', this.registerForm.email);
                 setTimeout(() => {
-                  window.location.href = this.getRedirectUrl();
+                  window.location.href = `verify-email?email=${encodeURIComponent(this.registerForm.email)}&redirectTo=${this.getRedirectUrl()}`;
                 }, 1500);
               } else {
                 const errorData = await response.json();

@@ -21,22 +21,24 @@ export default class AuthMiddleware {
   ) {
     await ctx.auth.authenticateUsing(options.guards, { loginRoute: this.redirectTo })
 
-    const url = ctx.request.url()
-
-    if (url.startsWith('/api')) {
-      return ctx.response.status(401).json({
-        message: 'Your email is not verified',
-      })
-    }
-
-    if (!ctx.auth.user?.emailVerifiedAt && !url.startsWith('/verify-email')) {
-      return ctx.response.redirect('/verify-email?redirectTo=' + url)
-    }
-
     ctx.view.share({
       user: ctx.auth.user,
       isLoggedIn: !!ctx.auth.user,
     })
+
+    const url = ctx.request.url()
+
+    if (!ctx.auth.user?.emailVerifiedAt) {
+      if (url.startsWith('/api')) {
+        return ctx.response.status(401).json({
+          message: 'Your email is not verified',
+        })
+      }
+
+      if (!url.startsWith('/verify-email')) {
+        return ctx.response.redirect('/verify-email?redirectTo=' + url)
+      }
+    }
 
     return next()
   }

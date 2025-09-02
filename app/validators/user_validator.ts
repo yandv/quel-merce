@@ -40,3 +40,15 @@ export const includesValidator = vine.compile(
     includes: vine.string().optional(),
   })
 )
+
+export const codeValidator = vine.compile(
+  vine.object({
+    code: vine.string().trim().minLength(1),
+  })
+)
+
+export const emailValidator = vine.compile(
+  vine.object({
+    email: vine.string().email().trim(),
+  })
+)

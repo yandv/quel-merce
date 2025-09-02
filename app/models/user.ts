@@ -6,6 +6,7 @@ import type { HasMany, ManyToMany } from '@adonisjs/lucid/types/relations'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 import Vehicle from '#models/vehicle'
 import Order from './order.js'
+import UserEmailVerificationCode from './user_email_verification_code.js'
 
 const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
   uids: ['email'],
@@ -54,6 +55,12 @@ export default class User extends compose(BaseModel, AuthFinder) {
     localKey: 'id',
   })
   declare orders: HasMany<typeof Order>
+
+  @hasMany(() => UserEmailVerificationCode, {
+    foreignKey: 'userId',
+    localKey: 'id',
+  })
+  declare verificationCodes: HasMany<typeof UserEmailVerificationCode>
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

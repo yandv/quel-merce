@@ -21,7 +21,12 @@
           <!-- Ícone de email -->
           <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-orange-100 mb-6">
             <svg class="h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+              />
             </svg>
           </div>
 
@@ -62,10 +67,11 @@
             <!-- Cronômetro visual -->
             <div x-show="isResendDisabled" class="text-center">
               <div class="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  class="bg-orange-600 h-2 rounded-full transition-all duration-1000 ease-linear"
-                  :style="`width: ${(resendCountdown / 300) * 100}%`"
-                ></div>
+                              <div
+                class="bg-orange-600 h-2 rounded-full transition-all duration-1000 ease-linear"
+                :style="`width: ${lastResendCountdown > 0 ? (resendCountdown / lastResendCountdown) * 100 : 0}%`"
+              >
+                </div>
               </div>
               <p class="text-xs text-gray-500 mt-2">
                 Aguarde para reenviar o email
@@ -103,77 +109,161 @@
           errorMessage: "",
           successMessage: "",
           isResendDisabled: false,
-          resendCountdown: 300, // 5 minutos em segundos
+          lastResendCountdown: 0,
+          resendCountdown: 0,
+          // 5 minutos em segundos
           countdownInterval: null,
-
-          init() {
-            // Iniciar o cronômetro quando a página carregar
-            this.startCountdown();
+          async init() {
+            // Verificar status do código de verificação
+            await this.checkVerificationStatus();
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get("code");
+            if (code) {
+              try {
+                const response = await fetch(`/api/users/verify-email/${code}`, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.content || ""
+                  }
+                });
+                if (response.ok) {
+                  this.showSuccess("Email verificado com sucesso, você será redirecionado em breve!");
+                  setTimeout(() => {
+                    window.location.href = urlParams.get("redirectTo") || "/";
+                  }, 1500);
+                } else {
+                  this.showError("Erro ao verificar email. Tente novamente.");
+                }
+              } catch (error) {
+                console.error("Erro ao verificar email:", error);
+                this.showError("Erro de conexão. Tente novamente.");
+              }
+            }
           },
-
           clearMessages() {
             this.errorMessage = "";
             this.successMessage = "";
           },
-
           showError(message) {
             this.errorMessage = message;
             this.successMessage = "";
           },
-
           showSuccess(message) {
             this.successMessage = message;
             this.errorMessage = "";
           },
-
           formatTime(seconds) {
+            if (seconds <= 0) return "0:00";
             const minutes = Math.floor(seconds / 60);
             const remainingSeconds = seconds % 60;
-            return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+            return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
           },
-
-          startCountdown() {
-            this.isResendDisabled = true;
-            this.resendCountdown = 300;
+          startCountdown(resendCountdown, lastResendCountdown) {
+            this.resendCountdown = resendCountdown;
+            this.lastResendCountdown = lastResendCountdown;
             
+            if (resendCountdown <= 0) {
+              this.isResendDisabled = false;
+              return;
+            }
+            
+            this.isResendDisabled = true;
             this.countdownInterval = setInterval(() => {
               this.resendCountdown--;
-              
               if (this.resendCountdown <= 0) {
                 this.stopCountdown();
               }
-            }, 1000);
+            }, 1e3);
           },
-
           stopCountdown() {
             if (this.countdownInterval) {
               clearInterval(this.countdownInterval);
               this.countdownInterval = null;
             }
             this.isResendDisabled = false;
-            this.resendCountdown = 300;
+            this.resendCountdown = 0;
           },
-
+          async checkVerificationStatus() {
+            try {
+              const email = this.getUserEmail();
+              if (!email) {
+                this.showError("Email não encontrado. Faça login novamente.");
+                return;
+              }
+              
+              const response = await fetch(`/api/users/verification-code-status/${email}`);
+              if (response.ok) {
+                const data = await response.json();
+                
+                if (data.resendCountdown <= 0) {
+                  // Pode reenviar imediatamente
+                  this.isResendDisabled = false;
+                  this.resendCountdown = 0;
+                  this.lastResendCountdown = data.lastResendCountdown;
+                } else {
+                  // Iniciar countdown
+                  this.startCountdown(data.resendCountdown, data.lastResendCountdown);
+                }
+              }
+            } catch (error) {
+              console.error("Erro ao verificar status:", error);
+            }
+          },
+          getUserEmail() {
+            // Tentar obter email da URL primeiro
+            const urlParams = new URLSearchParams(window.location.search);
+            const emailFromUrl = urlParams.get("email");
+            if (emailFromUrl) {
+              return emailFromUrl;
+            }
+            // Tentar obter do localStorage
+            const emailFromStorage = localStorage.getItem("userEmail");
+            if (emailFromStorage) {
+              return emailFromStorage;
+            }
+            // Se não encontrar, mostrar erro e redirecionar para login
+            this.showError("Email não encontrado. Faça login novamente.");
+            setTimeout(() => {
+              window.location.href = "/login";
+            }, 2e3);
+            return null;
+          },
           async resendEmail() {
             if (this.isResendDisabled || this.isLoading) {
               return;
             }
-
             this.isLoading = true;
             this.clearMessages();
-
             try {
-              // Simular envio de email (será implementado posteriormente)
-              await new Promise(resolve => setTimeout(resolve, 1000));
-              
-              this.showSuccess("Email de verificação reenviado com sucesso!");
-              
-              // Reiniciar o cronômetro
-              this.startCountdown();
-              
+              const email = this.getUserEmail();
+              if (!email) {
+                this.showError("Email não encontrado. Faça login novamente.");
+                return;
+              }
+              const response = await fetch(`/api/users/resend-verification-email/${email}`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Accept: "application/json",
+                  "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.content || ""
+                }
+              });
+              if (response.ok) {
+                this.showSuccess("Email de verificação reenviado com sucesso!");
+                // Usar os valores retornados pela resposta para atualizar o countdown
+                const data = await response.json();
+                if (data.resendCountdown !== undefined && data.lastResendCountdown !== undefined) {
+                  this.startCountdown(data.resendCountdown, data.lastResendCountdown);
+                }
+              } else {
+                const errorData = await response.json();
+                this.showError(errorData.message || "Erro ao reenviar email. Tente novamente.");
+              }
             } catch (error) {
               console.error("Erro ao reenviar email:", error);
-              this.showError("Erro ao reenviar email. Tente novamente.");
+              this.showError("Erro de conexão. Tente novamente.");
             } finally {
               this.isLoading = false;
             }
