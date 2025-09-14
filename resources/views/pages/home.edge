@@ -99,7 +99,7 @@
                     <span x-text="product.description"></span>
                   </p>
                   <p class="text-sm text-gray-500 mt-2" x-show="product.price">
-                    R$ <span x-text="product.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })"></span>
+                    <span x-text="Number(product.price).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })"></span>
                   </p>
                   <a
                     class="inline-block text-center mt-2 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"

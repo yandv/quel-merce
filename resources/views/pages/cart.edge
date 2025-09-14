@@ -62,8 +62,8 @@
                   <!-- Preço e botão remover -->
                   <div class="flex flex-col items-end space-y-4">
                     <p class="text-lg font-medium text-gray-900">
-                      R$ <span
-                        x-text="((item.price || 0) * item.quantity).toLocaleString('pt-BR', { minimumFractionDigits: 2 })"
+                      <span
+                        x-text="((item.price || 0) * item.quantity).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })"
                       ></span>
                     </p>
                     <button @click="$store.cart.removeItem(item)" class="text-gray-400 hover:text-red-500">
@@ -147,13 +147,13 @@
                           trigger: '<p class="text-sm font-medium text-green-800" x-text="$store.cart.coupon.code"></p>',
                           tooltipContent: `
                             <div x-show="$store.cart.coupon?.minimumOrderValue">
-                              <span class="font-medium">Valor mínimo:</span> R$ <span x-text="($store.cart.coupon?.minimumOrderValue || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span>
+                              <span class="font-medium">Valor mínimo:</span> <span x-text="(Number($store.cart.coupon?.minimumOrderValue) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })"></span>
                             </div>
                             <div x-show="$store.cart.coupon?.maximumDiscount">
-                              <span class="font-medium">Valor máximo:</span> R$ <span x-text="($store.cart.coupon?.maximumDiscount || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span>
+                              <span class="font-medium">Valor máximo:</span> <span x-text="(Number($store.cart.coupon?.maximumDiscount) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })"></span>
                             </div>
                             <div x-show="$store.cart.coupon?.maximumDiscount">
-                              <span class="font-medium">Desconto máximo:</span> R$ <span x-text="($store.cart.coupon?.maximumDiscount || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span>
+                              <span class="font-medium">Desconto máximo:</span> <span x-text="(Number($store.cart.coupon?.maximumDiscount) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })"></span>
                             </div>
                             <div x-show="$store.cart.coupon?.usageLimit">
                               <span class="font-medium">Máximo de usos:</span> <span x-text="$store.cart.coupon?.usageLimit"></span>
@@ -165,7 +165,7 @@
                               <span class="font-medium">Desconto:</span> <span x-text="$store.cart.coupon?.discountValue"></span>%
                             </div>
                             <div x-show="$store.cart.coupon?.discountType === 'FIXED_AMOUNT'">
-                              <span class="font-medium">Desconto:</span> R$ <span x-text="($store.cart.coupon?.discountValue || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span>
+                              <span class="font-medium">Desconto:</span> <span x-text="(Number($store.cart.coupon?.discountValue) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })"></span>
                             </div>
                           `,
                           triggerClass: 'cursor-help'
@@ -197,18 +197,18 @@
               <div class="space-y-4 border-t border-gray-200 pt-4">
                 <div class="flex justify-between text-sm">
                   <span class="text-gray-600">Subtotal:</span>
-                  <span class="font-medium">R$ <span x-text="$store.cart.getSubtotal().toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span></span>
+                  <span class="font-medium"><span x-text="$store.cart.getSubtotal().toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })"></span></span>
                 </div>
 
                 <!-- Desconto do cupom -->
                 <div x-show="$store.cart.coupon && $store.cart.getDiscount() > 0" class="flex justify-between text-sm">
                   <span class="text-gray-600">Desconto:</span>
-                  <span class="font-medium text-green-600">- R$ <span x-text="$store.cart.getDiscount().toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span></span>
+                  <span class="font-medium text-green-600">- <span x-text="$store.cart.getDiscount().toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })"></span></span>
                 </div>
 
                 <div class="flex justify-between text-lg font-medium border-t border-gray-200 pt-4">
                   <span>Total:</span>
-                  <span>R$ <span x-text="$store.cart.getTotal().toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span></span>
+                  <span><span x-text="$store.cart.getTotal().toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })"></span></span>
                 </div>
               </div>
 

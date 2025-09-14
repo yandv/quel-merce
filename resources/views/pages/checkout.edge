@@ -92,7 +92,7 @@
                     <span
                       class="flex-shrink-0 w-5 h-5 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs font-medium"
                     >3</span>
-                    <span>Confirme o pagamento no valor de <span class="font-medium">R$ <span x-text="order.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span></span></span>
+                    <span>Confirme o pagamento no valor de <span class="font-medium">                        <span x-text="order.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })"></span></span></span>
                   </li>
                   <li class="flex items-start space-x-2">
                     <span
@@ -221,7 +221,7 @@
                       <div class="text-right">
                         <span class="text-sm text-gray-600" x-text="'x' + item.quantity"></span>
                         <div class="text-sm font-medium text-gray-900">
-                          R$ <span x-text="item.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span>
+                          <span x-text="Number(item.price).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })"></span>
                         </div>
                       </div>
                     </div>
@@ -234,17 +234,19 @@
             <div class="border-t border-gray-200 pt-4 mt-6">
               <div class="flex justify-between text-md">
                 <span>Subtotal:</span>
-                <span>R$ <span x-text="order.items.reduce((acc, item) => acc + item.price * item.quantity, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span></span>
+                <span
+                  x-text="order.items.reduce((acc, item) => acc + item.price * item.quantity, 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })"
+                ></span>
               </div>
               <template x-if="order.discount > 0">
                 <div class="flex justify-between text-md">
                   <span>Desconto:</span>
-                  <span>R$ <span x-text="order.discount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span></span>
+                  <span x-text="Number(order.discount).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })"></span>
                 </div>
               </template>
               <div class="flex justify-between text-lg font-bold">
                 <span>Total:</span>
-                <span>R$ <span x-text="order.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span></span>
+                <span x-text="Number(order.total).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })"></span>
               </div>
             </div>
           </div>

@@ -20,8 +20,6 @@ export default class OrderController {
       throw new PaymentMethodNotSupportedException(paymentMethod)
     }
 
-    const user = auth.user
-
     const products = await Product.query().whereIn(
       'id',
       items.map((item) => item.productId)
@@ -80,7 +78,7 @@ export default class OrderController {
     const order = await db.transaction(async (trx) => {
       const createdOrder = await Order.create(
         {
-          userId: user?.id,
+          userId: auth.user!.id,
           paymentMethod,
           paymentStatus,
           couponId: coupon?.id ?? null,
