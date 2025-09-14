@@ -111,7 +111,7 @@
                     class="mt-2 w-full bg-orange-500 text-white py-2 rounded-lg hover:bg-orange-600"
                     @click="() => {
                       $store.cart.addItem(product)
-                      $store.toast.toast('Produto adicionado ao carrinho', 'success')
+                      $store.toast.toast(`1x ${product.name} adicionado ao carrinho`, 'success')
                     }"
                   >Adicionar ao carrinho</button>
                 </div>

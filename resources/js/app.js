@@ -120,22 +120,18 @@ document.addEventListener('alpine:init', () => {
       this.couponError = null
 
       try {
-        const orderTotal = this.getSubtotal()
-        const response = await fetch('/api/coupons/validate', {
-          method: 'POST',
+        const response = await fetch(`/api/coupons/${code}`, {
+          method: 'GET',
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
           },
-          body: JSON.stringify({ code, orderTotal }),
         })
 
         if (response.ok) {
           const data = await response.json()
-          this.coupon = data.coupon
-          this.coupon.discount = data.discount
-          this.coupon.finalTotal = data.finalTotal
+          this.coupon = data
           localStorage.setItem('cartCoupon', JSON.stringify(this.coupon))
           return true
         } else {
@@ -165,7 +161,26 @@ document.addEventListener('alpine:init', () => {
 
     getDiscount() {
       if (!this.coupon) return 0
-      return this.coupon.discount || 0
+
+      const coupon = this.coupon
+
+      if (coupon.minimumOrderValue && this.getSubtotal() < coupon.minimumOrderValue) {
+        return 0
+      }
+
+      let discount = 0
+
+      if (coupon.discountType === 'PERCENTAGE') {
+        discount = Math.round((this.getSubtotal() * coupon.discountValue) / 100)
+      } else {
+        discount = coupon.discountValue
+      }
+      
+      if (coupon.maximumDiscount && discount > coupon.maximumDiscount) {
+        discount = coupon.maximumDiscount
+      }
+
+      return Math.min(discount, this.getSubtotal())
     },
 
     getTotal() {
@@ -176,6 +191,7 @@ document.addEventListener('alpine:init', () => {
       if (!this.couponCode || !this.couponCode.trim()) return
 
       const success = await this.validateCoupon(this.couponCode)
+
       if (success) {
         this.couponCode = ''
       }
@@ -227,4 +243,3 @@ document.addEventListener('alpine:init', () => {
 Alpine.start()
 
 window.Alpine = Alpine
-window.$store = Alpine.store('cart')

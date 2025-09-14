@@ -3,6 +3,11 @@ import { BaseModel, column, hasMany } from '@adonisjs/lucid/orm'
 import type { HasMany } from '@adonisjs/lucid/types/relations'
 import Order from './order.js'
 
+export enum CouponDiscountType {
+  PERCENTAGE = 'PERCENTAGE',
+  FIXED_AMOUNT = 'FIXED_AMOUNT',
+}
+
 export default class Coupon extends BaseModel {
   @column({ isPrimary: true })
   declare id: string
@@ -14,7 +19,7 @@ export default class Coupon extends BaseModel {
   declare description: string
 
   @column()
-  declare discountType: 'PERCENTAGE' | 'FIXED_AMOUNT'
+  declare discountType: CouponDiscountType
 
   @column()
   declare discountValue: number

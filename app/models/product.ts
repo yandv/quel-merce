@@ -15,7 +15,7 @@ export default class Product extends BaseModel {
   declare description: string | null
 
   @column()
-  declare price: number | null
+  declare price: number
 
   @column()
   declare sku: string | null

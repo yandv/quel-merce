@@ -15,7 +15,7 @@ export default class HttpExceptionHandler extends ExceptionHandler {
    * codes. You might want to enable them in production only, but feel
    * free to enable them in development as well.
    */
-  protected readonly renderStatusPages = app.inProduction
+  protected readonly renderStatusPages = true
 
   /**
    * Status pages is a collection of error code range and a callback
@@ -23,10 +23,13 @@ export default class HttpExceptionHandler extends ExceptionHandler {
    */
   protected readonly statusPages: Record<StatusPageRange, StatusPageRenderer> = {
     '404': (error, { view }) => {
-      return view.render('pages/modules/common/pages/not_found', { error })
+      return view.render('pages/not_found', { error })
+    },
+    '403': (error, { view }) => {
+      return view.render('pages/forbidden', { error })
     },
     '500..599': (error, { view }) => {
-      return view.render('pages/modules/common/pages/server_error', { error })
+      return view.render('pages/server_error', { error })
     },
   }
 
@@ -42,6 +45,8 @@ export default class HttpExceptionHandler extends ExceptionHandler {
         code: error.code,
       })
     }
+
+    console.error(error)
 
     return super.handle(error, ctx)
   }

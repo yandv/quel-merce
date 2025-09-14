@@ -1,0 +1,38 @@
+@layout.app()
+  @slot('main')
+    <div class="flex flex-col h-screen">
+      <!-- Header -->
+      @!component('components/header', { showSearch: true })
+
+      <!-- Main Content -->
+      <main class="flex-1 flex items-center justify-center bg-gray-50">
+        <div class="text-center">
+          <div class="mb-8">
+            <h1 class="text-9xl font-bold text-red-600 mb-4">500</h1>
+            <h2 class="text-3xl font-semibold text-gray-800 mb-4">Erro interno do servidor</h2>
+            <p class="text-lg text-gray-600 mb-8">
+              Ops! Algo deu errado no nosso servidor. Nossa equipe foi notificada e está trabalhando para resolver o problema.
+            </p>
+          </div>
+          
+          <div class="space-y-4">
+            <a 
+              href="/" 
+              class="inline-block bg-orange-500 text-white px-8 py-3 rounded-lg hover:bg-orange-600 transition-colors font-medium"
+            >
+              Voltar ao início
+            </a>
+            
+            <div class="text-sm text-gray-500">
+              <p>Tente novamente em alguns minutos ou entre em contato conosco se o problema persistir.</p>
+              <div class="mt-2 space-x-4">
+                <a href="/products" class="text-orange-500 hover:text-orange-600 underline">Ver produtos</a>
+                <a href="/" class="text-orange-500 hover:text-orange-600 underline">Recarregar página</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  @endslot
+@end

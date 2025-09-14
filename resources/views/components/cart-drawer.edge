@@ -149,11 +149,38 @@
         <!-- Cupom aplicado -->
         <div x-show="$store.cart?.coupon" class="mb-3 p-3 bg-green-50 border border-green-200 rounded-md">
           <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-medium text-green-800" x-text="$store.cart.coupon?.code">
-              </p>
-              <p class="text-xs text-green-600" x-text="$store.cart.coupon?.description">
-              </p>
+            <div class="flex items-center space-x-2">
+              <div>
+                @!component('components/tooltip', {
+                  trigger: '<p class="text-sm font-medium text-green-800" x-text="$store.cart.coupon?.code"></p>',
+                  tooltipContent: `
+                    <div x-show="$store.cart.coupon?.minimumOrderValue">
+                      <span class="font-medium">Valor mínimo:</span> R$ <span x-text="($store.cart.coupon?.minimumOrderValue || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span>
+                    </div>
+                    <div x-show="$store.cart.coupon?.maximumDiscount">
+                      <span class="font-medium">Valor máximo:</span> R$ <span x-text="($store.cart.coupon?.maximumDiscount || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span>
+                    </div>
+                    <div x-show="$store.cart.coupon?.maximumDiscount">
+                      <span class="font-medium">Desconto máximo:</span> R$ <span x-text="($store.cart.coupon?.maximumDiscount || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span>
+                    </div>
+                    <div x-show="$store.cart.coupon?.usageLimit">
+                      <span class="font-medium">Máximo de usos:</span> <span x-text="$store.cart.coupon?.usageLimit"></span>
+                    </div>
+                    <div>
+                      <span class="font-medium">Tipo:</span> <span x-text="$store.cart.coupon?.discountType === 'PERCENTAGE' ? 'Porcentagem' : 'Valor fixo'"></span>
+                    </div>
+                    <div x-show="$store.cart.coupon?.discountType === 'PERCENTAGE'">
+                      <span class="font-medium">Desconto:</span> <span x-text="$store.cart.coupon?.discountValue"></span>%
+                    </div>
+                    <div x-show="$store.cart.coupon?.discountType === 'FIXED_AMOUNT'">
+                      <span class="font-medium">Desconto:</span> R$ <span x-text="($store.cart.coupon?.discountValue || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span>
+                    </div>
+                  `,
+                  triggerClass: 'cursor-help'
+                })
+                <p class="text-xs text-green-600" x-text="$store.cart.coupon?.description">
+                </p>
+              </div>
             </div>
             <button @click="$store.cart.removeCoupon()" class="text-green-600 hover:text-green-800">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -198,7 +225,7 @@
         </div>
 
         <!-- Desconto -->
-        <div x-show="$store.cart.coupon" class="flex justify-between text-sm">
+        <div x-show="$store.cart.coupon && $store.cart.getDiscount() > 0" class="flex justify-between text-sm">
           <span class="text-gray-600">Desconto:</span>
           <span class="font-medium text-green-600">-R$ <span x-text="$store.cart.getDiscount().toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span></span>
         </div>

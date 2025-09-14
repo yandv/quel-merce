@@ -92,7 +92,7 @@
                     <span
                       class="flex-shrink-0 w-5 h-5 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs font-medium"
                     >3</span>
-                    <span>Confirme o pagamento no valor de <span class="font-medium">R$ <span x-text="getOrderTotal().toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span></span></span>
+                    <span>Confirme o pagamento no valor de <span class="font-medium">R$ <span x-text="order.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span></span></span>
                   </li>
                   <li class="flex items-start space-x-2">
                     <span
@@ -232,15 +232,19 @@
 
             <!-- Total -->
             <div class="border-t border-gray-200 pt-4 mt-6">
-              <template x-if="order.coupon">
+              <div class="flex justify-between text-md">
+                <span>Subtotal:</span>
+                <span>R$ <span x-text="order.items.reduce((acc, item) => acc + item.price * item.quantity, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span></span>
+              </div>
+              <template x-if="order.discount > 0">
                 <div class="flex justify-between text-md">
                   <span>Desconto:</span>
-                  <span>R$ <span x-text="order.coupon?.discountValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span></span>
+                  <span>R$ <span x-text="order.discount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span></span>
                 </div>
               </template>
               <div class="flex justify-between text-lg font-bold">
                 <span>Total:</span>
-                <span>R$ <span x-text="getOrderTotal().toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span></span>
+                <span>R$ <span x-text="order.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span></span>
               </div>
             </div>
           </div>
@@ -284,14 +288,6 @@
             } finally {
               this.loading = false;
             }
-          },
-          getOrderTotal() {
-            if (!this.order || !this.order.items) return 0;
-            let total = this.order.items.reduce((total, item) => total + item.price * item.quantity, 0);
-            if (this.order.coupon) {
-              total -= this.order.coupon.discountValue;
-            }
-            return total;
           },
           getStatusText(status) {
             const statusMap = {

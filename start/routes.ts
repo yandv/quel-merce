@@ -113,8 +113,7 @@ router
 
     router
       .group(() => {
-        router.post('/validate', [CouponsController, 'validateCoupon'])
-        router.post('/apply', [CouponsController, 'applyCoupon'])
+        router.get('/:code', [CouponsController, 'getCouponByCode'])
 
         router
           .group(() => {

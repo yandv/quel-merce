@@ -1,0 +1,38 @@
+@layout.app()
+  @slot('main')
+    <div class="flex flex-col h-screen">
+      <!-- Header -->
+      @!component('components/header', { showSearch: true })
+
+      <!-- Main Content -->
+      <main class="flex-1 flex items-center justify-center bg-gray-50">
+        <div class="text-center">
+          <div class="mb-8">
+            <h1 class="text-9xl font-bold text-red-500 mb-4">403</h1>
+            <h2 class="text-3xl font-semibold text-gray-800 mb-4">Acesso negado</h2>
+            <p class="text-lg text-gray-600 mb-8">
+              Você não tem permissão para acessar esta página ou recurso.
+            </p>
+          </div>
+          
+          <div class="space-y-4">
+            <a 
+              href="/" 
+              class="inline-block bg-orange-500 text-white px-8 py-3 rounded-lg hover:bg-orange-600 transition-colors font-medium"
+            >
+              Voltar ao início
+            </a>
+            
+            <div class="text-sm text-gray-500">
+              <p>Se você acredita que isso é um erro, entre em contato conosco.</p>
+              <div class="mt-2 space-x-4">
+                <a href="/products" class="text-orange-500 hover:text-orange-600 underline">Ver produtos</a>
+                <a href="/login" class="text-orange-500 hover:text-orange-600 underline">Fazer login</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  @endslot
+@end

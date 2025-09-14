@@ -47,6 +47,12 @@ export default class Order extends BaseModel {
   declare coupon: BelongsTo<typeof Coupon>
 
   @column()
+  declare total: number
+
+  @column()
+  declare discount: number
+
+  @column()
   declare paidAt: DateTime | null
 
   @hasMany(() => OrderItem, {

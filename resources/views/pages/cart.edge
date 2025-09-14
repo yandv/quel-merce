@@ -141,19 +141,46 @@
                           stroke-width="2"
                           d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                         />
-
                       </svg>
                       <div>
-                        <p class="text-sm font-medium text-green-800" x-text="$store.cart.coupon.code">
-                        </p>
+                        @!component('components/tooltip', {
+                          trigger: '<p class="text-sm font-medium text-green-800" x-text="$store.cart.coupon.code"></p>',
+                          tooltipContent: `
+                            <div x-show="$store.cart.coupon?.minimumOrderValue">
+                              <span class="font-medium">Valor mínimo:</span> R$ <span x-text="($store.cart.coupon?.minimumOrderValue || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span>
+                            </div>
+                            <div x-show="$store.cart.coupon?.maximumDiscount">
+                              <span class="font-medium">Valor máximo:</span> R$ <span x-text="($store.cart.coupon?.maximumDiscount || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span>
+                            </div>
+                            <div x-show="$store.cart.coupon?.maximumDiscount">
+                              <span class="font-medium">Desconto máximo:</span> R$ <span x-text="($store.cart.coupon?.maximumDiscount || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span>
+                            </div>
+                            <div x-show="$store.cart.coupon?.usageLimit">
+                              <span class="font-medium">Máximo de usos:</span> <span x-text="$store.cart.coupon?.usageLimit"></span>
+                            </div>
+                            <div>
+                              <span class="font-medium">Tipo:</span> <span x-text="$store.cart.coupon?.discountType === 'PERCENTAGE' ? 'Porcentagem' : 'Valor fixo'"></span>
+                            </div>
+                            <div x-show="$store.cart.coupon?.discountType === 'PERCENTAGE'">
+                              <span class="font-medium">Desconto:</span> <span x-text="$store.cart.coupon?.discountValue"></span>%
+                            </div>
+                            <div x-show="$store.cart.coupon?.discountType === 'FIXED_AMOUNT'">
+                              <span class="font-medium">Desconto:</span> R$ <span x-text="($store.cart.coupon?.discountValue || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span>
+                            </div>
+                          `,
+                          triggerClass: 'cursor-help'
+                        })
                         <p class="text-xs text-green-600" x-text="$store.cart.coupon.description">
                         </p>
                       </div>
                     </div>
-                    <button @click="$store.cart.removeCoupon()" class="text-green-600 hover:text-green-800" title="Remover cupom">
+                    <button
+                      @click="$store.cart.removeCoupon()"
+                      class="text-green-600 hover:text-green-800"
+                      title="Remover cupom"
+                    >
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-
                       </svg>
                     </button>
                   </div>
@@ -174,7 +201,7 @@
                 </div>
 
                 <!-- Desconto do cupom -->
-                <div x-show="$store.cart.coupon" class="flex justify-between text-sm">
+                <div x-show="$store.cart.coupon && $store.cart.getDiscount() > 0" class="flex justify-between text-sm">
                   <span class="text-gray-600">Desconto:</span>
                   <span class="font-medium text-green-600">- R$ <span x-text="$store.cart.getDiscount().toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span></span>
                 </div>

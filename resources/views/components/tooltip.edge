@@ -1,0 +1,13 @@
+<div class="relative group">
+  <div class="{{ triggerClass || 'cursor-help' }}">
+    {{{ trigger || content }}}
+  </div>
+  
+  <div class="absolute {{ position === 'bottom' ? 'top-full mt-2' : position === 'left' ? 'right-full mr-2 top-1/2 transform -translate-y-1/2' : position === 'right' ? 'left-full ml-2 top-1/2 transform -translate-y-1/2' : 'bottom-full mb-2' }} {{ position === 'left' || position === 'right' ? '' : 'left-1/2 transform -translate-x-1/2' }} px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10 {{ size === 'sm' ? 'text-xs' : size === 'lg' ? 'text-sm' : 'text-xs' }}">
+    <div class="space-y-1">
+      {{{ tooltipContent || content }}}
+    </div>
+    
+    <div class="absolute {{ position === 'bottom' ? 'bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-900' : position === 'left' ? 'left-full top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-gray-900' : position === 'right' ? 'right-full top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-l-4 border-transparent border-l-gray-900' : 'top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900' }}"></div>
+  </div>
+</div>
