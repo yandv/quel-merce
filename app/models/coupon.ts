@@ -2,7 +2,6 @@ import { DateTime } from 'luxon'
 import { BaseModel, column, hasMany } from '@adonisjs/lucid/orm'
 import type { HasMany } from '@adonisjs/lucid/types/relations'
 import Order from './order.js'
-import { randomUUID } from 'node:crypto'
 
 export default class Coupon extends BaseModel {
   @column({ isPrimary: true })
