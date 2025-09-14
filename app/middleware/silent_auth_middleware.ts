@@ -1,3 +1,4 @@
+import { RoleHierarchy, UserRole } from '#models/user'
 import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
 
@@ -14,6 +15,8 @@ export default class SilentAuthMiddleware {
     ctx.view.share({
       user: ctx.auth.user,
       isLoggedIn: !!ctx.auth.user,
+      hasRole: (role: UserRole) =>
+        ctx.auth.user?.role && RoleHierarchy[ctx.auth.user.role] >= RoleHierarchy[role],
     })
 
     return next()

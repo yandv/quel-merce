@@ -39,13 +39,6 @@
             </div>
           </div>
 
-          <div
-            x-show="successMessage"
-            class="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded"
-          >
-            <span x-text="successMessage"></span>
-          </div>
-
           <!-- Formulário de Login -->
           <form x-show="isLogin" @submit.prevent="handleLogin" class="space-y-2">
             <div>
@@ -301,7 +294,6 @@
           isLogin: true,
           isLoading: false,
           errorMessage: "",
-          successMessage: "",
           showVerificationPrompt: false,
           loginForm: {
             email: "",
@@ -322,17 +314,10 @@
           // Limpar mensagens
           clearMessages() {
             this.errorMessage = "";
-            this.successMessage = "";
           },
           // Mostrar erro
           showError(message) {
             this.errorMessage = message;
-            this.successMessage = "";
-          },
-          // Mostrar sucesso
-          showSuccess(message) {
-            this.successMessage = message;
-            this.errorMessage = "";
           },
           toggleMode() {
             this.isLogin = !this.isLogin;
@@ -368,19 +353,14 @@
                 })
               });
               if (response.ok) {
-                this.showSuccess("Login realizado com sucesso!");
-                // Redirecionar após um breve delay para mostrar a mensagem
-                setTimeout(() => {
-                  window.location.href = this.getRedirectUrl();
-                }, 1e3);
+                window.location.href = this.getRedirectUrl();
               } else {
                 const errorData = await response.json();
-                
                 // Verificar se é erro de email não verificado
-                if (errorData.code === 'USER_NOT_EMAIL_VERIFIED_YET') {
+                if (errorData.code === "USER_NOT_EMAIL_VERIFIED_YET") {
                   this.showError("Seu email ainda não foi verificado. Verifique sua caixa de entrada ou reenvie o código de verificação.");
                   // Salvar email no localStorage para uso na página de verificação
-                  localStorage.setItem('userEmail', this.loginForm.email);
+                  localStorage.setItem("userEmail", this.loginForm.email);
                   // Mostrar botão para ir para página de verificação
                   this.showVerificationPrompt = true;
                 } else {
@@ -416,12 +396,9 @@
                 })
               });
               if (response.ok) {
-                this.showSuccess("Conta criada com sucesso! Você será redirecionado em breve.");
                 // Salvar email no localStorage para uso na página de verificação
-                localStorage.setItem('userEmail', this.registerForm.email);
-                setTimeout(() => {
-                  window.location.href = `verify-email?email=${encodeURIComponent(this.registerForm.email)}&redirectTo=${this.getRedirectUrl()}`;
-                }, 1500);
+                localStorage.setItem("userEmail", this.registerForm.email);
+                window.location.href = `verify-email?email=${encodeURIComponent(this.registerForm.email)}&redirectTo=${this.getRedirectUrl()}`;
               } else {
                 const errorData = await response.json();
                 if (errorData.errors) {

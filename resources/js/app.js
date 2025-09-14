@@ -39,6 +39,11 @@ document.addEventListener('alpine:init', () => {
     items: JSON.parse(localStorage.getItem('cart') || '[]'),
     isDrawerOpen: false,
     isInitialized: false,
+    coupon: JSON.parse(localStorage.getItem('cartCoupon') || 'null'),
+    couponLoading: false,
+    couponError: null,
+    couponCode: '',
+    isCreatingOrder: false,
 
     getItems() {
       return this.items
@@ -95,7 +100,6 @@ document.addEventListener('alpine:init', () => {
     init() {
       if (!this.isInitialized) {
         this.isInitialized = true
-        // Garantir que o drawer comece fechado
         this.isDrawerOpen = false
       }
     },
@@ -108,9 +112,119 @@ document.addEventListener('alpine:init', () => {
     close() {
       this.isDrawerOpen = false
     },
+
+    async validateCoupon(code) {
+      if (!code || this.items.length === 0) return false
+
+      this.couponLoading = true
+      this.couponError = null
+
+      try {
+        const orderTotal = this.getSubtotal()
+        const response = await fetch('/api/coupons/validate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+          },
+          body: JSON.stringify({ code, orderTotal }),
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          this.coupon = data.coupon
+          this.coupon.discount = data.discount
+          this.coupon.finalTotal = data.finalTotal
+          localStorage.setItem('cartCoupon', JSON.stringify(this.coupon))
+          return true
+        } else {
+          const errorData = await response.json()
+          this.couponError = errorData.message
+          this.coupon = null
+          return false
+        }
+      } catch (error) {
+        this.couponError = 'Erro ao validar cupom'
+        this.coupon = null
+        return false
+      } finally {
+        this.couponLoading = false
+      }
+    },
+
+    removeCoupon() {
+      this.coupon = null
+      this.couponError = null
+      localStorage.removeItem('cartCoupon')
+    },
+
+    getSubtotal() {
+      return this.items.reduce((total, item) => total + (item.price || 0) * item.quantity, 0)
+    },
+
+    getDiscount() {
+      if (!this.coupon) return 0
+      return this.coupon.discount || 0
+    },
+
+    getTotal() {
+      return this.getSubtotal() - this.getDiscount()
+    },
+
+    async applyCoupon() {
+      if (!this.couponCode || !this.couponCode.trim()) return
+
+      const success = await this.validateCoupon(this.couponCode)
+      if (success) {
+        this.couponCode = ''
+      }
+    },
+
+    async createOrder(paymentMethod) {
+      if (this.isCreatingOrder) return
+
+      this.isCreatingOrder = true
+
+      try {
+        const orderData = {
+          paymentMethod: paymentMethod,
+          couponId: this.coupon?.id,
+          items: this.items.map((item) => ({
+            productId: item.id,
+            quantity: item.quantity,
+          })),
+        }
+
+        const response = await fetch('/api/orders', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+          },
+          body: JSON.stringify(orderData),
+        })
+
+        if (response.ok) {
+          const order = await response.json()
+          this.clearItems()
+          this.removeCoupon()
+          window.location.href = `/checkout/${order.id}`
+        } else {
+          const errorData = await response.json()
+          Alpine.store('toast').toast(errorData.message || 'Erro ao criar pedido', 'error')
+        }
+      } catch (error) {
+        Alpine.store('toast').toast('Erro ao criar pedido', 'error')
+      } finally {
+        this.isCreatingOrder = false
+      }
+    },
   })
 })
 
 Alpine.start()
 
 window.Alpine = Alpine
+window.$store = Alpine.store('cart')

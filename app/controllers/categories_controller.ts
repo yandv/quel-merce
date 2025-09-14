@@ -2,6 +2,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import Category from '#models/category'
 import Product from '#models/product'
 import db from '@adonisjs/lucid/services/db'
+import CategoryNotFoundException from '#exceptions/category/category_not_found_exception'
 
 export default class CategoriesController {
   /**
@@ -61,7 +62,7 @@ export default class CategoriesController {
     const category = await Category.find(id)
 
     if (!category) {
-      return response.status(404).json({ error: 'Categoria não encontrada' })
+      throw new CategoryNotFoundException()
     }
 
     const subcategoryIds = await this.getAllSubcategoryIds(id)

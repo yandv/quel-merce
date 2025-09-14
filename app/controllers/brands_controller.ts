@@ -7,8 +7,8 @@ import {
   modelQueryValidator,
   getYearsValidator,
 } from '#validators/brand_validator'
-import BrandNotFoundException from '#exceptions/brand_not_found_exception'
-import ModelNotFoundException from '#exceptions/model_not_found_exception'
+import BrandNotFoundException from '#exceptions/brand/brand_not_found_exception'
+import ModelNotFoundException from '#exceptions/model/model_not_found_exception'
 
 export default class BrandsController {
   /**

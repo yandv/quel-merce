@@ -42,22 +42,6 @@
             </p>
           </div>
 
-          <!-- Success message -->
-          <div x-show="isSuccess" class="text-center">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-6">
-              <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-
-              </svg>
-            </div>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">
-              Email verificado com sucesso!
-            </h3>
-            <p class="text-sm text-gray-600 mb-4">
-              Você será redirecionado para a página inicial em alguns instantes.
-            </p>
-          </div>
-
           <!-- Error message -->
           <div x-show="isError" class="text-center">
             <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-6">
@@ -95,7 +79,6 @@
       function MagicLinkPage() {
         return {
           isLoading: true,
-          isSuccess: false,
           isError: false,
           async init() {
             // Obter o código da URL
@@ -119,7 +102,7 @@
                 }
               });
               if (response.ok) {
-                this.showSuccess();
+                window.location.href = "/";
               } else {
                 this.showError();
               }
@@ -128,14 +111,8 @@
               this.showError();
             }
           },
-          showSuccess() {
-            this.isLoading = false;
-            this.isSuccess = true;
-            this.isError = false;
-          },
           showError() {
             this.isLoading = false;
-            this.isSuccess = false;
             this.isError = true;
           }
         };

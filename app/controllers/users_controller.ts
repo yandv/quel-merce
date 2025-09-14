@@ -11,24 +11,36 @@ import {
   codeValidator,
   emailValidator,
 } from '#validators/user_validator'
-import UserNotFoundException from '#exceptions/user_not_found_exception'
-import VehicleNotFoundException from '#exceptions/vehicle_not_found_exception'
-import VehicleAlreadyAttachedException from '#exceptions/vehicle_already_attached_exception'
-import VehicleLimitExceededException from '#exceptions/vehicle_limit_exceeded_exception'
-import VehicleNotAttachedException from '#exceptions/vehicle_not_attached_exception'
+import UserNotFoundException from '#exceptions/user/user_not_found_exception'
+import VehicleNotFoundException from '#exceptions/vehicle/vehicle_not_found_exception'
+import VehicleAlreadyAttachedException from '#exceptions/vehicle/vehicle_already_attached_exception'
+import VehicleLimitExceededException from '#exceptions/vehicle/vehicle_limit_exceeded_exception'
+import VehicleNotAttachedException from '#exceptions/vehicle/vehicle_not_attached_exception'
 import { DateTime } from 'luxon'
 import UserEmailVerificationCode from '#models/user_email_verification_code'
-import UserEmailVerificationCodeNotFoundOrExpiredException from '#exceptions/user_email_verification_code_not_found_or_expired_exception'
-import UserNotEmailVerifiedYetException from '#exceptions/user_not_email_verified_yet_exception'
+import UserEmailVerificationCodeNotFoundOrExpiredException from '#exceptions/user/user_email_verification_code_not_found_or_expired_exception'
+import UserNotEmailVerifiedYetException from '#exceptions/user/user_not_email_verified_yet_exception'
+import { EmailService } from '#services/email_service'
+import { inject } from '@adonisjs/core'
+import UserEmailAlreadyVerifiedException from '#exceptions/user/user_email_already_verified_exception'
 
+@inject()
 export default class UsersController {
-  async login({ request, response, auth }: HttpContext) {
+  constructor(private emailService: EmailService) {}
+
+  async login({ request, response, auth, session }: HttpContext) {
     const { email, password } = await loginValidator.validate(request.all())
 
     const user = await User.verifyCredentials(email, password)
 
     if (!user.emailVerifiedAt) {
       throw new UserNotEmailVerifiedYetException()
+    }
+
+    if (request.input('rememberMe')) {
+      session.config.age = '7d'
+    } else {
+      session.config.age = '12h'
     }
 
     await auth.use('web').login(user)
@@ -43,7 +55,7 @@ export default class UsersController {
   }
 
   async register({ request, response }: HttpContext) {
-    const { fullName, email, password } = await registerValidator.validate(request.all())
+    const { fullName, email, password } = await request.validateUsing(registerValidator)
 
     const user = await User.create({ fullName, email, password })
 
@@ -54,8 +66,8 @@ export default class UsersController {
       expiresAt: DateTime.now().plus({ minutes: 10 }),
     })
 
-    // TODO: Implementar envio de email com o código
-    // Por enquanto, apenas retornamos sucesso com redirecionamento
+    await this.emailService.sendMagicLink(user.email, user, code)
+
     return response.status(201).json(user)
   }
 
@@ -98,8 +110,13 @@ export default class UsersController {
     const { email } = await emailValidator.validate(params)
 
     const user = await User.findBy('email', email)
+
     if (!user) {
       throw new UserNotFoundException()
+    }
+
+    if (user.emailVerifiedAt) {
+      throw new UserEmailAlreadyVerifiedException()
     }
 
     // Gerar novo código
@@ -110,8 +127,7 @@ export default class UsersController {
       expiresAt: DateTime.now().plus({ minutes: 10 }),
     })
 
-    // TODO: Implementar envio de email com o código
-    // Por enquanto, apenas retornamos sucesso
+    await this.emailService.sendMagicLink(user.email, user, code)
 
     // Calcular novos valores de countdown após criar o código
     const allCodes = await UserEmailVerificationCode.query()
@@ -359,6 +375,7 @@ export default class UsersController {
     if (data.fullName !== undefined) {
       user.fullName = data.fullName
     }
+
     if (data.avatarUrl !== undefined) {
       user.avatarUrl = data.avatarUrl
     }

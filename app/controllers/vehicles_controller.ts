@@ -1,3 +1,4 @@
+import VehicleNotFoundException from '#exceptions/vehicle/vehicle_not_found_exception'
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class VehiclesController {
@@ -11,9 +12,7 @@ export default class VehiclesController {
     const color = 'White'
 
     if (plate !== 'lrz7447') {
-      return ctx.response.status(404).json({
-        message: 'Vehicle not found',
-      })
+      throw new VehicleNotFoundException()
     }
 
     return ctx.response.json({

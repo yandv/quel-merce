@@ -1,6 +1,6 @@
 @layout.app()
   @slot('main')
-    <div x-data="CartPage()" x-init="loadData()" class="min-h-screen bg-gray-50">
+    <div x-data="{}" class="min-h-screen bg-gray-50">
       <!-- Header -->
       @include('components/header')
 
@@ -92,16 +92,77 @@
               <!-- Cupom -->
               <div class="mb-6">
                 <label for="coupon" class="block text-sm font-medium text-gray-700 mb-2">Cupom de desconto</label>
-                <div class="flex space-x-2">
+
+                <!-- Campo de cupom -->
+                <div x-show="!$store.cart.coupon" class="flex space-x-2">
                   <input
                     type="text"
                     id="coupon"
+                    x-model="$store.cart.couponCode"
                     placeholder="Digite seu cupom"
                     class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    :disabled="$store.cart.couponLoading"
                   />
-                  <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm hover:bg-gray-200">
-                    Aplicar
+                  <button
+                    @click="$store.cart.applyCoupon()"
+                    class="px-4 py-2 bg-orange-600 text-white rounded-md text-sm hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    :disabled="$store.cart.couponLoading || !$store.cart.couponCode.trim()"
+                  >
+                    <span x-show="!$store.cart.couponLoading">Aplicar</span>
+                    <span x-show="$store.cart.couponLoading" class="flex items-center">
+                      <svg
+                        class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+
+                        <path
+                          class="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+
+                      </svg>
+                      Aplicando...
+                    </span>
                   </button>
+                </div>
+
+                <!-- Cupom aplicado -->
+                <div x-show="$store.cart.coupon" class="bg-green-50 border border-green-200 rounded-md p-3">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                      <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+
+                      </svg>
+                      <div>
+                        <p class="text-sm font-medium text-green-800" x-text="$store.cart.coupon.code">
+                        </p>
+                        <p class="text-xs text-green-600" x-text="$store.cart.coupon.description">
+                        </p>
+                      </div>
+                    </div>
+                    <button @click="$store.cart.removeCoupon()" class="text-green-600 hover:text-green-800" title="Remover cupom">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Erro do cupom -->
+                <div x-show="$store.cart.couponError" class="mt-2 bg-red-50 border border-red-200 rounded-md p-2">
+                  <p class="text-xs text-red-600" x-text="$store.cart.couponError">
+                  </p>
                 </div>
               </div>
 
@@ -109,39 +170,30 @@
               <div class="space-y-4 border-t border-gray-200 pt-4">
                 <div class="flex justify-between text-sm">
                   <span class="text-gray-600">Subtotal:</span>
-                  <span class="font-medium">R$ <span
-                      x-text="(() => {
-                    return $store.cart.items.reduce((total, item) => {
-                      return total + ((item.price || 0) * item.quantity)
-                    }, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })
-                  })()"
-                    ></span></span>
+                  <span class="font-medium">R$ <span x-text="$store.cart.getSubtotal().toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span></span>
                 </div>
-                <div class="flex justify-between text-sm">
-                  <span class="text-gray-600">Frete:</span>
-                  <span class="font-medium">Não vou implementar...</span>
+
+                <!-- Desconto do cupom -->
+                <div x-show="$store.cart.coupon" class="flex justify-between text-sm">
+                  <span class="text-gray-600">Desconto:</span>
+                  <span class="font-medium text-green-600">- R$ <span x-text="$store.cart.getDiscount().toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span></span>
                 </div>
+
                 <div class="flex justify-between text-lg font-medium border-t border-gray-200 pt-4">
                   <span>Total:</span>
-                  <span>R$ <span
-                      x-text="(() => {
-                    return $store.cart.items.reduce((total, item) => {
-                      return total + ((item.price || 0) * item.quantity)
-                    }, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })
-                  })()"
-                    ></span></span>
+                  <span>R$ <span x-text="$store.cart.getTotal().toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span></span>
                 </div>
               </div>
 
               <!-- Botão finalizar compra -->
               <button
                 class="w-full bg-orange-600 text-white py-3 px-4 rounded-md text-sm font-medium hover:bg-orange-700 mt-6"
-                @click="createOrder($store.cart.items, 'PIX')"
-                x-bind:disabled="isCreatingOrder"
-                x-bind:class="{ 'opacity-50 cursor-not-allowed': isCreatingOrder }"
+                @click="$store.cart.createOrder('PIX')"
+                x-bind:disabled="$store.cart.isCreatingOrder"
+                x-bind:class="{ 'opacity-50 cursor-not-allowed': $store.cart.isCreatingOrder }"
               >
-                <span x-show="!isCreatingOrder">Finalizar Compra</span>
-                <span x-show="isCreatingOrder" class="flex items-center gap-2">
+                <span x-show="!$store.cart.isCreatingOrder">Finalizar Compra</span>
+                <span x-show="$store.cart.isCreatingOrder" class="flex items-center gap-2">
                   <svg
                     class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
                     xmlns="http://www.w3.org/2000/svg"
@@ -185,43 +237,5 @@
       </div>
     </div>
 
-    <script>
-      function CartPage() {
-        return {
-          isCreatingOrder: false,
-          loadData() {
-            // A página carrega automaticamente os dados do carrinho do store
-          },
-          async createOrder(items, paymentMethod) {
-            this.isCreatingOrder = true;
-            try {
-              const response = await fetch("/api/orders", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Accept: "application/json",
-                  "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
-                },
-                body: JSON.stringify({
-                  items: items.map(item => ({
-                    productId: item.id,
-                    quantity: item.quantity
-                  })),
-                  paymentMethod: paymentMethod
-                })
-              });
-              if (response.ok) {
-                const data = await response.json();
-                window.location.href = "/checkout/" + data.id;
-              }
-            } catch (error) {
-              console.error("Erro no pedido:", error);
-            } finally {
-              this.isCreatingOrder = false;
-            }
-          }
-        };
-      }
-    </script>
   @endslot
 @end

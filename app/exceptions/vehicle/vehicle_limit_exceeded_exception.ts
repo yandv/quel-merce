@@ -1,4 +1,4 @@
-import DomainException from './domain_exception.js'
+import DomainException from '../domain_exception.js'
 
 export default class VehicleLimitExceededException extends DomainException {
   static status = 400

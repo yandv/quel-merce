@@ -1,6 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
 import type { Authenticators } from '@adonisjs/auth/types'
+import { RoleHierarchy, UserRole } from '#models/user'
 
 /**
  * Auth middleware is used authenticate HTTP requests and deny
@@ -24,6 +25,8 @@ export default class AuthMiddleware {
     ctx.view.share({
       user: ctx.auth.user,
       isLoggedIn: !!ctx.auth.user,
+      hasRole: (role: UserRole) =>
+        ctx.auth.user?.role && RoleHierarchy[ctx.auth.user.role] >= RoleHierarchy[role],
     })
 
     const url = ctx.request.url()

@@ -3,6 +3,7 @@ import { BaseModel, belongsTo, column, hasMany } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import User from './user.js'
 import OrderItem from './order_item.js'
+import Coupon from './coupon.js'
 
 export enum OrderPaymentStatus {
   PENDING = 'PENDING',
@@ -35,6 +36,15 @@ export default class Order extends BaseModel {
 
   @column()
   declare paymentStatus: OrderPaymentStatus
+
+  @column()
+  declare couponId: string | null
+
+  @belongsTo(() => Coupon, {
+    foreignKey: 'couponId',
+    localKey: 'id',
+  })
+  declare coupon: BelongsTo<typeof Coupon>
 
   @column()
   declare paidAt: DateTime | null

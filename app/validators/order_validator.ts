@@ -5,11 +5,22 @@ export const createOrderValidator = vine.compile(
   vine.object({
     items: vine.array(
       vine.object({
-        productId: vine.string().uuid(),
+        productId: vine.string().uuid().exists({
+          table: 'products',
+          column: 'id',
+        }),
         quantity: vine.number().positive(),
       })
     ),
     paymentMethod: vine.enum(PaymentMethod),
+    couponId: vine
+      .string()
+      .uuid()
+      .exists({
+        table: 'coupons',
+        column: 'id',
+      })
+      .optional(),
   })
 )
 

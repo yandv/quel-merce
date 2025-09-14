@@ -19,6 +19,12 @@ export enum UserRole {
   USER = 'USER',
 }
 
+export const RoleHierarchy: Record<UserRole, number> = {
+  [UserRole.ADMIN]: 3,
+  [UserRole.CUSTOMER]: 2,
+  [UserRole.USER]: 1,
+}
+
 export default class User extends compose(BaseModel, AuthFinder) {
   @column({ isPrimary: true })
   declare id: string

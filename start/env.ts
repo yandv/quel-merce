@@ -13,11 +13,13 @@ import { Env } from '@adonisjs/core/env'
 
 export default await Env.create(new URL('../', import.meta.url), {
   NODE_ENV: Env.schema.enum(['development', 'production', 'test'] as const),
-  PORT: Env.schema.number(),
-  APP_KEY: Env.schema.string(),
-  HOST: Env.schema.string({ format: 'host' }),
-  LOG_LEVEL: Env.schema.string(),
 
+  PORT: Env.schema.number(),
+  HOST: Env.schema.string({ format: 'host' }),
+  PUBLIC_APP_URL: Env.schema.string(),
+
+  APP_KEY: Env.schema.string(),
+  LOG_LEVEL: Env.schema.string(),
   /*
   |----------------------------------------------------------
   | Variables for configuring session package
@@ -36,4 +38,12 @@ export default await Env.create(new URL('../', import.meta.url), {
   DB_PASSWORD: Env.schema.string.optional(),
   DB_DATABASE: Env.schema.string(),
   DB_SSL: Env.schema.boolean(),
+
+  /*
+  |----------------------------------------------------------
+  | Variables for configuring the mail package
+  |----------------------------------------------------------
+  */
+  SMTP_HOST: Env.schema.string(),
+  SMTP_PORT: Env.schema.string(),
 })

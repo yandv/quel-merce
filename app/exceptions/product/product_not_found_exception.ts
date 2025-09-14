@@ -1,4 +1,4 @@
-import DomainException from './domain_exception.js'
+import DomainException from '#exceptions/domain_exception'
 
 export default class ProductNotFoundException extends DomainException {
   static status = 400

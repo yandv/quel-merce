@@ -27,5 +27,5 @@ export default class Year extends BaseModel {
     foreignKey: 'yearId',
     localKey: 'id',
   })
-  declare cars: HasMany<typeof Vehicle>
+  declare vehicles: HasMany<typeof Vehicle>
 }

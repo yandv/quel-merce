@@ -27,5 +27,5 @@ export default class Model extends BaseModel {
     foreignKey: 'modelId',
     localKey: 'id',
   })
-  declare cars: HasMany<typeof Vehicle>
+  declare vehicles: HasMany<typeof Vehicle>
 }

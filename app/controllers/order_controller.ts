@@ -1,14 +1,13 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import { createOrderValidator, orderIdValidator } from '#validators/order_controller'
+import { createOrderValidator, orderIdValidator } from '#validators/order_validator'
 import Order, { OrderPaymentStatus, PaymentMethod } from '#models/order'
 import Product from '#models/product'
-import PaymentMethodNotSupportedException from '#exceptions/payment_method_not_supported_exception'
-import ProductNotFoundException from '#exceptions/product_not_found_exception'
-import OrderNotFoundException from '#exceptions/order_not_found_exception'
+import PaymentMethodNotSupportedException from '#exceptions/payment/payment_method_not_supported_exception'
+import OrderNotFoundException from '#exceptions/order/order_not_found_exception'
 
 export default class OrderController {
   async createOrder({ request, response, auth }: HttpContext) {
-    const { items, paymentMethod } = await createOrderValidator.validate(request.all())
+    const { items, paymentMethod, couponId } = await request.validateUsing(createOrderValidator)
 
     if (paymentMethod !== PaymentMethod.PIX) {
       throw new PaymentMethodNotSupportedException(paymentMethod)
@@ -21,18 +20,11 @@ export default class OrderController {
       items.map((item) => item.productId)
     )
 
-    if (products.length !== items.length) {
-      const foundProductIds = products.map((product) => product.id)
-      const missingProductIds = items
-        .map((item) => item.productId)
-        .filter((id) => !foundProductIds.includes(id))
-      throw new ProductNotFoundException(missingProductIds)
-    }
-
     const order = await Order.create({
       userId: user?.id,
       paymentMethod,
       paymentStatus: OrderPaymentStatus.PENDING,
+      couponId: couponId,
     })
 
     await order.related('items').createMany(
@@ -55,6 +47,7 @@ export default class OrderController {
       .preload('items', (itemsQuery) => {
         itemsQuery.preload('product')
       })
+      .preload('coupon')
       .first()
 
     if (!order) {

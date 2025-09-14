@@ -13,6 +13,8 @@ export default class extends BaseSchema {
       table.enum('payment_status', ['PENDING', 'PAID', 'CANCELLED', 'CHARGED_BACK']).notNullable()
       table.timestamp('paid_at').nullable()
 
+      table.uuid('coupon_id').references('id').inTable('coupons').onDelete('CASCADE').nullable()
+
       table.timestamp('created_at').notNullable().defaultTo(this.raw('CURRENT_TIMESTAMP'))
       table.timestamp('updated_at').nullable()
     })

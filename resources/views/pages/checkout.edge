@@ -173,7 +173,11 @@
           <!-- Order summary -->
           <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h1 class="text-3xl font-bold text-gray-900 mb-6">
-              Resumo do Pedido
+              Resumo do Pedido (<span
+                class="font-medium"
+                x-text="new Date(order.createdAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })"
+              >
+              </span>)
             </h1>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -188,20 +192,12 @@
                     <span class="font-medium" x-text="order.id"></span>
                   </div>
                   <div class="flex justify-between">
-                    <span class="text-gray-600">Data:</span>
-                    <span class="font-medium" x-text="new Date(order.createdAt).toLocaleDateString('pt-BR')"></span>
-                  </div>
-                  <div class="flex justify-between">
-                    <span class="text-gray-600">Status:</span>
-                    <span class="font-medium text-orange-600" x-text="getStatusText(order.paymentStatus)"></span>
-                  </div>
-                  <div class="flex justify-between">
                     <span class="text-gray-600">Método de Pagamento:</span>
                     <span class="font-medium" x-text="getPaymentMethodText(order.paymentMethod)"></span>
                   </div>
                   <div class="flex justify-between">
                     <span class="text-gray-600">Cupom de Desconto:</span>
-                    <span class="font-medium" x-text="order.discountCode || 'Nenhum cupom aplicado'"></span>
+                    <span class="font-medium" x-text="order.coupon?.code || 'Nenhum cupom aplicado'"></span>
                   </div>
                 </div>
               </div>
@@ -236,6 +232,12 @@
 
             <!-- Total -->
             <div class="border-t border-gray-200 pt-4 mt-6">
+              <template x-if="order.coupon">
+                <div class="flex justify-between text-md">
+                  <span>Desconto:</span>
+                  <span>R$ <span x-text="order.coupon?.discountValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span></span>
+                </div>
+              </template>
               <div class="flex justify-between text-lg font-bold">
                 <span>Total:</span>
                 <span>R$ <span x-text="getOrderTotal().toLocaleString('pt-BR', { minimumFractionDigits: 2 })"></span></span>
@@ -285,7 +287,11 @@
           },
           getOrderTotal() {
             if (!this.order || !this.order.items) return 0;
-            return this.order.items.reduce((total, item) => total + item.price * item.quantity, 0);
+            let total = this.order.items.reduce((total, item) => total + item.price * item.quantity, 0);
+            if (this.order.coupon) {
+              total -= this.order.coupon.discountValue;
+            }
+            return total;
           },
           getStatusText(status) {
             const statusMap = {

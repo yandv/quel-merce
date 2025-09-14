@@ -1,4 +1,4 @@
-import DomainException from './domain_exception.js'
+import DomainException from '../domain_exception.js'
 
 export default class VehicleNotFoundException extends DomainException {
   static status = 404
