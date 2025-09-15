@@ -19,8 +19,16 @@ export const createCouponValidator = vine.compile(
     minimumOrderValue: vine.number(),
     maximumDiscount: vine.number().optional(),
     usageLimit: vine.number().optional(),
-    validFrom: vine.date(),
-    validUntil: vine.date(),
+    validFrom: vine.date({
+      formats: {
+        format: 'iso',
+      },
+    }),
+    validUntil: vine.date({
+      formats: {
+        format: 'iso',
+      },
+    }),
     isActive: vine.boolean(),
   })
 )
