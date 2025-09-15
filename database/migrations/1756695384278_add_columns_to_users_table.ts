@@ -6,7 +6,7 @@ export default class extends BaseSchema {
   async up() {
     this.schema.alterTable(this.tableName, (table) => {
       table.timestamp('email_verified_at').nullable()
-      table.enum('role', ['ADMIN', 'CUSTOMER', 'USER']).notNullable().defaultTo('USER')
+      table.enum('role', ['ADMIN', 'SELLER', 'CUSTOMER']).notNullable().defaultTo('CUSTOMER')
     })
   }
 

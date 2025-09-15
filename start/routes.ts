@@ -50,7 +50,7 @@ router
     router.on('/products').render('pages/admin/products')
   })
   .prefix('admin')
-  .middleware([middleware.auth(), middleware.role({ requiredRole: UserRole.CUSTOMER })])
+  .middleware([middleware.auth(), middleware.role({ requiredRole: UserRole.SELLER })])
 
 router.get('/default-avatar.png', (ctx) => {
   const base64 =
@@ -130,13 +130,18 @@ router
       .group(() => {
         router
           .group(() => {
-            router.get('/summary', [CouponsController, 'getCouponSummary'])
-            router.get('/', [CouponsController, 'getCoupons'])
             router.post('/', [CouponsController, 'createCoupon'])
             router.patch('/:id', [CouponsController, 'updateCouponById'])
             router.delete('/:id', [CouponsController, 'deleteCouponById'])
           })
-          .middleware([middleware.auth(), middleware.role({ requiredRole: UserRole.CUSTOMER })])
+          .middleware([middleware.auth(), middleware.role({ requiredRole: UserRole.ADMIN })])
+
+        router
+          .group(() => {
+            router.get('/summary', [CouponsController, 'getCouponSummary'])
+            router.get('/', [CouponsController, 'getCoupons'])
+          })
+          .middleware([middleware.auth(), middleware.role({ requiredRole: UserRole.SELLER })])
 
         router.get('/:code', [CouponsController, 'getCouponByCode'])
       })

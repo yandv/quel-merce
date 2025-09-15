@@ -53,12 +53,6 @@ export const vehicleIdValidator = vine.compile(
   })
 )
 
-export const includesValidator = vine.compile(
-  vine.object({
-    includes: vine.string().optional(),
-  })
-)
-
 export const codeValidator = vine.compile(
   vine.object({
     code: vine.string().trim().minLength(1).maxLength(100),

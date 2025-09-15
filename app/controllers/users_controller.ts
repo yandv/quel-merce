@@ -4,7 +4,6 @@ import Vehicle from '#models/vehicle'
 import {
   userIdValidator,
   vehicleIdValidator,
-  includesValidator,
   registerValidator,
   loginValidator,
   updateProfileValidator,
@@ -23,6 +22,7 @@ import UserNotEmailVerifiedYetException from '#exceptions/user/user_not_email_ve
 import { EmailService } from '#services/email_service'
 import { inject } from '@adonisjs/core'
 import UserEmailAlreadyVerifiedException from '#exceptions/user/user_email_already_verified_exception'
+import { includesValidator } from '#validators/default_validators'
 
 @inject()
 export default class UsersController {
@@ -176,7 +176,6 @@ export default class UsersController {
     const lastVerificationCode = sortedCodes[0]
     const codeCount = existingCodes.length
 
-    // Calcular tempo até próximo resend permitido
     const nextResendTime = lastVerificationCode.createdAt.plus({
       seconds: this.getCountdown(codeCount - 1),
     })
@@ -186,7 +185,6 @@ export default class UsersController {
       Math.ceil(nextResendTime.diff(DateTime.now()).as('seconds'))
     )
 
-    // Calcular último tempo de espera usado
     const lastResendCountdown = this.getCountdown(codeCount - 1)
 
     return response.status(200).json({

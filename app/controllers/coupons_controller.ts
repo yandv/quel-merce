@@ -14,6 +14,7 @@ import {
 } from '#validators/coupon_validator'
 import { sortAndPaginationValidator } from '#validators/default_validators'
 import Order from '#models/order'
+import CouponNewUsageLimitEqualsOrLowerThanUsageCountException from '#exceptions/coupon/coupon_new_usage_limit_equals_or_lower_than_usage_count_exception'
 
 export default class CouponsController {
   async getCouponByCode({ params, response }: HttpContext) {
@@ -122,6 +123,14 @@ export default class CouponsController {
     const data = await request.validateUsing(updateCouponValidator)
 
     const coupon = await Coupon.findOrFail(id)
+
+    if (
+      data.usageLimit &&
+      Number.isInteger(data.usageLimit) &&
+      coupon.usageCount >= data.usageLimit
+    ) {
+      throw new CouponNewUsageLimitEqualsOrLowerThanUsageCountException()
+    }
 
     coupon.merge({
       ...data,

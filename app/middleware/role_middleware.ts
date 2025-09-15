@@ -2,21 +2,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
 import { RoleHierarchy, UserRole } from '#models/user'
 
-/**
- * Role middleware is used to authorize HTTP requests based on user roles.
- * The user must be authenticated and have a role greater than or equal to the required role.
- * Role hierarchy: ADMIN > CUSTOMER > USER
- */
 export default class RoleMiddleware {
-  /**
-   * The URL to redirect to, when authorization fails
-   */
-  redirectTo = '/forbidden'
-
-  /**
-   * Role hierarchy mapping for comparison
-   */
-
   async handle(
     ctx: HttpContext,
     next: NextFn,
@@ -30,6 +16,7 @@ export default class RoleMiddleware {
           message: 'Not authorized',
         })
       }
+
       return ctx.response.redirect('/login')
     }
 
@@ -42,7 +29,10 @@ export default class RoleMiddleware {
           message: `Access denied.`,
         })
       }
-      return ctx.response.redirect(this.redirectTo)
+
+      const html = await ctx.view.render('pages/not-found')
+
+      return ctx.response.send(html)
     }
 
     return next()

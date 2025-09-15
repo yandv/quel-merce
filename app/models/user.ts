@@ -15,14 +15,14 @@ const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
 
 export enum UserRole {
   ADMIN = 'ADMIN',
+  SELLER = 'SELLER',
   CUSTOMER = 'CUSTOMER',
-  USER = 'USER',
 }
 
 export const RoleHierarchy: Record<UserRole, number> = {
   [UserRole.ADMIN]: 3,
-  [UserRole.CUSTOMER]: 2,
-  [UserRole.USER]: 1,
+  [UserRole.SELLER]: 2,
+  [UserRole.CUSTOMER]: 1,
 }
 
 export default class User extends compose(BaseModel, AuthFinder) {
