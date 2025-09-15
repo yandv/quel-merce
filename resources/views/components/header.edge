@@ -19,7 +19,16 @@
     
     <div class="flex items-center space-x-6">
       @include('components/cart')
-      @include('components/user-profile')
+      
+      @if(isLoggedIn)
+        @!userMenu({
+          showAdminPanel: true,
+        }) 
+      @else
+        <a href="/login" class="text-gray-700 hover:text-orange-600 font-medium">
+          Entrar
+        </a>
+      @endif
     </div>
   </div>
 </header>

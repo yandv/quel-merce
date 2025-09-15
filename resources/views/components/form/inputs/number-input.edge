@@ -1,4 +1,4 @@
-@!component({ name: 'TextInput' })
+@!component({ name: 'NumberInput' })
 @!props({
   name: 'string',
   label: 'string',
@@ -8,7 +8,11 @@
   disabled: 'boolean',
   error: 'string',
   help: 'string',
-  type: 'string',
+  min: 'number',
+  max: 'number',
+  step: 'number',
+  prefix: 'string',
+  suffix: 'string',
   class: 'string'
 })
 
@@ -23,16 +27,31 @@
   @endif
 
   <div class="relative">
+    @if(prefix)
+      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        <span class="text-gray-500 text-sm">{{ prefix }}</span>
+      </div>
+    @endif
+    
     <input 
-      type="{{ type || 'text' }}"
+      type="number"
       id="{{ name }}"
       name="{{ name }}"
       value="{{ value || '' }}"
       placeholder="{{ placeholder || '' }}"
       @if(required) required @endif
       @if(disabled) disabled @endif
-      class="block w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200 @if(disabled) bg-gray-50 cursor-not-allowed @endif @if(error) border-red-300 focus:ring-red-500 focus:border-red-500 @endif {{ class || '' }}"
+      @if(min !== undefined) min="{{ min }}" @endif
+      @if(max !== undefined) max="{{ max }}" @endif
+      @if(step !== undefined) step="{{ step }}" @endif
+      class="block w-full @if(prefix) pl-8 @endif @if(suffix) pr-8 @endif px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200 @if(disabled) bg-gray-50 cursor-not-allowed @endif @if(error) border-red-300 focus:ring-red-500 focus:border-red-500 @endif {{ class || '' }}"
     />
+    
+    @if(suffix)
+      <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+        <span class="text-gray-500 text-sm">{{ suffix }}</span>
+      </div>
+    @endif
   </div>
 
   @if(error)

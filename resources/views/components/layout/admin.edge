@@ -1,0 +1,15 @@
+@layout.app()
+  @slot('main')
+    <div class="flex h-screen bg-gray-50" x-data="{ sidebarOpen: false }">
+      @include('components/admin/sidebar')
+
+      <div class="flex-1 flex flex-col overflow-hidden">
+        @include('components/admin/header')
+
+        <main class="flex-1 overflow-y-auto bg-gray-50">
+          {{{ await $slots.main() }}}
+        </main>
+      </div>
+    </div>
+  @endslot
+@end

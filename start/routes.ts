@@ -27,6 +27,9 @@ router
     router.on('/products/:id').render('pages/product-details')
     router.on('/verify-email').render('pages/verify-email')
     router.on('/magic-link/:code').render('pages/magic-link')
+    router.on('/forbidden').render('pages/forbidden')
+    router.on('/not-found').render('pages/not-found')
+    router.on('/server-error').render('pages/server-error')
   })
   .middleware(middleware.silent_auth())
 
@@ -36,6 +39,18 @@ router
     router.on('/my-profile').render('pages/my-profile')
   })
   .middleware(middleware.auth())
+
+router
+  .group(() => {
+    router.on('/').render('pages/admin/home')
+    router.on('/users').render('pages/admin/users')
+    router.on('/orders').render('pages/admin/orders')
+    router.on('/coupons').render('pages/admin/coupons')
+    router.on('/settings').render('pages/admin/settings')
+    router.on('/products').render('pages/admin/products')
+  })
+  .prefix('admin')
+  .middleware([middleware.auth(), middleware.role({ requiredRole: UserRole.CUSTOMER })])
 
 router.get('/default-avatar.png', (ctx) => {
   const base64 =
@@ -113,18 +128,17 @@ router
 
     router
       .group(() => {
-        router.get('/:code', [CouponsController, 'getCouponByCode'])
-
         router
           .group(() => {
-            router.get('/', [CouponsController, 'index'])
-            router.post('/', [CouponsController, 'store'])
-            router.get('/:id', [CouponsController, 'show'])
-            router.patch('/:id', [CouponsController, 'update'])
-            router.delete('/:id', [CouponsController, 'destroy'])
+            router.get('/summary', [CouponsController, 'getCouponSummary'])
+            router.get('/', [CouponsController, 'getCoupons'])
+            router.post('/', [CouponsController, 'createCoupon'])
+            router.patch('/:id', [CouponsController, 'updateCouponById'])
+            router.delete('/:id', [CouponsController, 'deleteCouponById'])
           })
-          .prefix('admin')
           .middleware([middleware.auth(), middleware.role({ requiredRole: UserRole.CUSTOMER })])
+
+        router.get('/:code', [CouponsController, 'getCouponByCode'])
       })
       .prefix('coupons')
       .middleware(middleware.auth())

@@ -2,6 +2,7 @@ import app from '@adonisjs/core/services/app'
 import { HttpContext, ExceptionHandler } from '@adonisjs/core/http'
 import type { StatusPageRange, StatusPageRenderer } from '@adonisjs/core/types/http'
 import DomainException from '#exceptions/domain_exception'
+import { errors } from '@vinejs/vine'
 
 export default class HttpExceptionHandler extends ExceptionHandler {
   /**
@@ -23,13 +24,13 @@ export default class HttpExceptionHandler extends ExceptionHandler {
    */
   protected readonly statusPages: Record<StatusPageRange, StatusPageRenderer> = {
     '404': (error, { view }) => {
-      return view.render('pages/not_found', { error })
+      return view.render('pages/not-found', { error })
     },
     '403': (error, { view }) => {
       return view.render('pages/forbidden', { error })
     },
     '500..599': (error, { view }) => {
-      return view.render('pages/server_error', { error })
+      return view.render('pages/server-error', { error })
     },
   }
 
@@ -46,7 +47,9 @@ export default class HttpExceptionHandler extends ExceptionHandler {
       })
     }
 
-    console.error(error)
+    if (error instanceof errors.E_VALIDATION_ERROR) {
+      return ctx.response.status(422).send(error)
+    }
 
     return super.handle(error, ctx)
   }

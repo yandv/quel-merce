@@ -11,7 +11,7 @@ export default class RoleMiddleware {
   /**
    * The URL to redirect to, when authorization fails
    */
-  redirectTo = '/unauthorized'
+  redirectTo = '/forbidden'
 
   /**
    * Role hierarchy mapping for comparison

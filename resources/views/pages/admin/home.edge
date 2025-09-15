@@ -1,0 +1,334 @@
+@layout.admin()
+  @slot('main')
+    <div class="p-6" x-data="{ pageTitle: 'Dashboard', pageDescription: 'Visão geral do sistema' }">
+      <!-- Welcome Section -->
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">
+          Bem-vindo, {{ user.fullName.split(' ')[0] }}
+        </h1>
+      </div>
+
+      <!-- Stats Overview -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Total Sales -->
+        <div class="bg-white p-6 rounded-lg shadow">
+          <div class="flex items-center">
+            <div class="p-3 bg-green-100 rounded-lg">
+              <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+                />
+              </svg>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500">
+                Vendas Hoje
+              </p>
+              <p class="text-2xl font-semibold text-gray-900">
+                R$ 2,456
+              </p>
+              <p class="text-xs text-green-600">
+                +12% vs ontem
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Orders -->
+        <div class="bg-white p-6 rounded-lg shadow">
+          <div class="flex items-center">
+            <div class="p-3 bg-blue-100 rounded-lg">
+              <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                />
+              </svg>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500">
+                Pedidos Hoje
+              </p>
+              <p class="text-2xl font-semibold text-gray-900">
+                23
+              </p>
+              <p class="text-xs text-green-600">
+                +8% vs ontem
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Customers -->
+        <div class="bg-white p-6 rounded-lg shadow">
+          <div class="flex items-center">
+            <div class="p-3 bg-purple-100 rounded-lg">
+              <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
+                />
+              </svg>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500">
+                Novos Clientes
+              </p>
+              <p class="text-2xl font-semibold text-gray-900">
+                12
+              </p>
+              <p class="text-xs text-green-600">
+                +15% vs ontem
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Conversion Rate -->
+        <div class="bg-white p-6 rounded-lg shadow">
+          <div class="flex items-center">
+            <div class="p-3 bg-orange-100 rounded-lg">
+              <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                />
+              </svg>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500">
+                Taxa de Conversão
+              </p>
+              <p class="text-2xl font-semibold text-gray-900">
+                3.2%
+              </p>
+              <p class="text-xs text-green-600">
+                +0.3% vs ontem
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts and Tables -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Sales Chart -->
+        <div class="bg-white p-6 rounded-lg shadow">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">
+            Vendas dos Últimos 7 Dias
+          </h3>
+          <div class="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
+            <div class="text-center">
+              <svg
+                class="w-16 h-16 text-gray-400 mx-auto mb-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                />
+              </svg>
+              <p class="text-gray-500">
+                Gráfico de vendas
+              </p>
+              <p class="text-sm text-gray-400">
+                Integração com biblioteca de gráficos
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="bg-white p-6 rounded-lg shadow">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">
+            Pedidos Recentes
+          </h3>
+          <div class="space-y-4">
+            <div class="flex items-center justify-between py-2 border-b border-gray-100">
+              <div>
+                <p class="text-sm font-medium text-gray-900">
+                  #12345
+                </p>
+                <p class="text-xs text-gray-500">
+                  João Silva
+                </p>
+              </div>
+              <div class="text-right">
+                <p class="text-sm font-medium text-gray-900">
+                  R$ 89,90
+                </p>
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                  Pendente
+                </span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between py-2 border-b border-gray-100">
+              <div>
+                <p class="text-sm font-medium text-gray-900">
+                  #12344
+                </p>
+                <p class="text-xs text-gray-500">
+                  Maria Santos
+                </p>
+              </div>
+              <div class="text-right">
+                <p class="text-sm font-medium text-gray-900">
+                  R$ 156,50
+                </p>
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                  Concluído
+                </span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between py-2 border-b border-gray-100">
+              <div>
+                <p class="text-sm font-medium text-gray-900">
+                  #12343
+                </p>
+                <p class="text-xs text-gray-500">
+                  Pedro Costa
+                </p>
+              </div>
+              <div class="text-right">
+                <p class="text-sm font-medium text-gray-900">
+                  R$ 234,00
+                </p>
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                  Processando
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="mt-4">
+            <a href="/admin/orders" class="text-orange-600 hover:text-orange-900 text-sm font-medium">
+              Ver todos os pedidos →
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">
+          Ações Rápidas
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <a
+            href="/admin/products"
+            class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <div class="p-2 bg-blue-100 rounded-lg mr-3">
+              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                />
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-900">
+                Gerenciar Produtos
+              </p>
+              <p class="text-xs text-gray-500">
+                Adicionar ou editar produtos
+              </p>
+            </div>
+          </a>
+
+          <a
+            href="/admin/coupons"
+            class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <div class="p-2 bg-green-100 rounded-lg mr-3">
+              <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                />
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-900">
+                Criar Cupom
+              </p>
+              <p class="text-xs text-gray-500">
+                Gerar cupons de desconto
+              </p>
+            </div>
+          </a>
+
+          <a
+            href="/admin/users"
+            class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <div class="p-2 bg-purple-100 rounded-lg mr-3">
+              <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
+                />
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-900">
+                Ver Usuários
+              </p>
+              <p class="text-xs text-gray-500">
+                Gerenciar clientes
+              </p>
+            </div>
+          </a>
+
+          <a
+            href="/admin/settings"
+            class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <div class="p-2 bg-orange-100 rounded-lg mr-3">
+              <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-900">
+                Configurações
+              </p>
+              <p class="text-xs text-gray-500">
+                Ajustar sistema
+              </p>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  @endslot
+@end

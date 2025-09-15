@@ -197,18 +197,25 @@
               <div class="space-y-4 border-t border-gray-200 pt-4">
                 <div class="flex justify-between text-sm">
                   <span class="text-gray-600">Subtotal:</span>
-                  <span class="font-medium"><span x-text="$store.cart.getSubtotal().toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })"></span></span>
+                  <span class="font-medium">                    <span
+                      x-text="$store.cart.getSubtotal().toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })"
+                    ></span></span>
                 </div>
 
                 <!-- Desconto do cupom -->
-                <div x-show="$store.cart.coupon && $store.cart.getDiscount() > 0" class="flex justify-between text-sm">
+                <div
+                  x-show="$store.cart.coupon && $store.cart.getDiscount() > 0"
+                  class="flex justify-between text-sm"
+                >
                   <span class="text-gray-600">Desconto:</span>
-                  <span class="font-medium text-green-600">- <span x-text="$store.cart.getDiscount().toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })"></span></span>
+                  <span class="font-medium text-green-600">- <span
+                      x-text="$store.cart.getDiscount().toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })"
+                    ></span></span>
                 </div>
 
                 <div class="flex justify-between text-lg font-medium border-t border-gray-200 pt-4">
                   <span>Total:</span>
-                  <span><span x-text="$store.cart.getTotal().toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })"></span></span>
+                  <span>                    <span x-text="$store.cart.getTotal().toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })"></span></span>
                 </div>
               </div>
 

@@ -1,0 +1,208 @@
+@layout.admin()
+  @slot('main')
+    <div class="p-6" x-data="{ pageTitle: 'Configurações', pageDescription: 'Configure o sistema' }">
+      <!-- Page Header -->
+      <div class="mb-6">
+        <div>
+          <h2 class="text-3xl font-bold text-gray-900">
+            Configurações
+          </h2>
+          <p class="mt-1 text-sm text-gray-500">
+            Configure as opções do sistema e da loja
+          </p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Settings Navigation -->
+        <div class="lg:col-span-1">
+          <nav class="space-y-1">
+            <a
+              href="#"
+              class="bg-orange-50 text-orange-600 group flex items-center px-3 py-2 text-sm font-medium rounded-md"
+            >
+              <svg class="text-orange-500 mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              Geral
+            </a>
+            <a
+              href="#"
+              class="text-gray-600 hover:bg-gray-50 group flex items-center px-3 py-2 text-sm font-medium rounded-md"
+            >
+              <svg class="text-gray-400 mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                />
+              </svg>
+              Pagamentos
+            </a>
+            <a
+              href="#"
+              class="text-gray-600 hover:bg-gray-50 group flex items-center px-3 py-2 text-sm font-medium rounded-md"
+            >
+              <svg class="text-gray-400 mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                />
+              </svg>
+              E-mail
+            </a>
+            <a
+              href="#"
+              class="text-gray-600 hover:bg-gray-50 group flex items-center px-3 py-2 text-sm font-medium rounded-md"
+            >
+              <svg class="text-gray-400 mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                />
+              </svg>
+              Segurança
+            </a>
+            <a
+              href="#"
+              class="text-gray-600 hover:bg-gray-50 group flex items-center px-3 py-2 text-sm font-medium rounded-md"
+            >
+              <svg class="text-gray-400 mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                />
+              </svg>
+              Integrações
+            </a>
+          </nav>
+        </div>
+
+        <!-- Settings Content -->
+        <div class="lg:col-span-2">
+          <div class="bg-white shadow rounded-lg">
+            <div class="px-6 py-4 border-b border-gray-200">
+              <h3 class="text-lg font-medium text-gray-900">
+                Configurações Gerais
+              </h3>
+              <p class="mt-1 text-sm text-gray-500">
+                Configure as informações básicas da sua loja
+              </p>
+            </div>
+
+            <form class="px-6 py-4 space-y-6">
+              <!-- Store Name -->
+              <div>
+                <label for="store-name" class="block text-sm font-medium text-gray-700">Nome da Loja</label>
+                <input
+                  type="text"
+                  id="store-name"
+                  value="QuelMerce"
+                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
+                />
+              </div>
+
+              <!-- Store Description -->
+              <div>
+                <label for="store-description" class="block text-sm font-medium text-gray-700">Descrição da Loja</label>
+                <textarea
+                  id="store-description"
+                  rows="3"
+                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
+                >Here you find everything your car needs</textarea>
+              </div>
+
+              <!-- Store Email -->
+              <div>
+                <label for="store-email" class="block text-sm font-medium text-gray-700">E-mail de Contato</label>
+                <input
+                  type="email"
+                  id="store-email"
+                  value="contato@quelmerce.com"
+                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
+                />
+              </div>
+
+              <!-- Store Phone -->
+              <div>
+                <label for="store-phone" class="block text-sm font-medium text-gray-700">Telefone</label>
+                <input
+                  type="tel"
+                  id="store-phone"
+                  value="(21) 99999-9999"
+                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
+                />
+              </div>
+
+              <!-- Store Address -->
+              <div>
+                <label for="store-address" class="block text-sm font-medium text-gray-700">Endereço</label>
+                <textarea
+                  id="store-address"
+                  rows="2"
+                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
+                >Rua das Flores, 123
+Centro - Rio de Janeiro, RJ</textarea>
+              </div>
+
+              <!-- Currency -->
+              <div>
+                <label for="currency" class="block text-sm font-medium text-gray-700">Moeda</label>
+                <select
+                  id="currency"
+                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
+                >
+                  <option value="BRL" selected>
+                    Real Brasileiro (BRL)
+                  </option>
+                  <option value="USD">
+                    Dólar Americano (USD)
+                  </option>
+                  <option value="EUR">
+                    Euro (EUR)
+                  </option>
+                </select>
+              </div>
+
+              <!-- Timezone -->
+              <div>
+                <label for="timezone" class="block text-sm font-medium text-gray-700">Fuso Horário</label>
+                <select
+                  id="timezone"
+                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
+                >
+                  <option value="America/Sao_Paulo" selected>
+                    America/Sao_Paulo (GMT-3)
+                  </option>
+                  <option value="America/New_York">
+                    America/New_York (GMT-5)
+                  </option>
+                  <option value="Europe/London">
+                    Europe/London (GMT+0)
+                  </option>
+                </select>
+              </div>
+
+              <!-- Save Button -->
+              <div class="flex justify-end">
+                <button
+                  type="submit"
+                  class="bg-orange-600 text-white px-6 py-2 rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+                >
+                  Salvar Configurações
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  @endslot
+@end

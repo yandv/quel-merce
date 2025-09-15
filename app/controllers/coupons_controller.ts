@@ -5,7 +5,15 @@ import CouponExpiredException from '#exceptions/coupon/coupon_expired_exception'
 import CouponUsageLimitExceededException from '#exceptions/coupon/coupon_usage_limit_exceeded_exception'
 import CouponInactiveException from '#exceptions/coupon/coupon_inactive_exception'
 import { DateTime } from 'luxon'
-import { couponValidator } from '#validators/coupon_validator'
+import {
+  couponQueryValidator,
+  couponValidator,
+  createCouponValidator,
+  couponIdValidator,
+  updateCouponValidator,
+} from '#validators/coupon_validator'
+import { sortAndPaginationValidator } from '#validators/default_validators'
+import Order from '#models/order'
 
 export default class CouponsController {
   async getCouponByCode({ params, response }: HttpContext) {
@@ -34,69 +42,100 @@ export default class CouponsController {
     return response.status(200).json(coupon)
   }
 
-  // Métodos administrativos (para criar/gerenciar cupons)
-  async index({ response }: HttpContext) {
-    const coupons = await Coupon.all()
-    return response.json(coupons)
+  async getCoupons({ request, response }: HttpContext) {
+    const { name, active } = await couponQueryValidator.validate(request.all())
+    const {
+      sort,
+      page = 1,
+      itemsPerPage = 10,
+    } = await sortAndPaginationValidator.validate(request.all())
+
+    const query = Coupon.query()
+
+    if (name) {
+      query.whereRaw('LOWER(UNACCENT(code)) LIKE ?', [`%${name.toLowerCase()}%`])
+    }
+
+    if (active !== undefined) {
+      query.where('isActive', active)
+    }
+
+    if (sort) {
+      query.orderBy(sort.map((item) => ({ column: item.field, order: item.order })))
+    }
+
+    const coupons = await query.paginate(page, itemsPerPage)
+
+    return response.json({
+      data: coupons,
+      pagination: {
+        page,
+        itemsPerPage,
+        total: coupons.total,
+        totalPages: coupons.lastPage,
+      },
+    })
   }
 
-  async store({ request, response }: HttpContext) {
-    const data = request.only([
-      'code',
-      'description',
-      'discountType',
-      'discountValue',
-      'minimumOrderValue',
-      'maximumDiscount',
-      'usageLimit',
-      'validFrom',
-      'validUntil',
+  async getCouponSummary({ response }: HttpContext) {
+    const [
+      [totalCouponsCount],
+      [activeCouponsCount],
+      [expiringIn7DaysCouponsCount],
+      [usagesThisMonthCouponsCount],
+    ] = await Promise.all([
+      Coupon.query().count('* as total').pojo<{ total: number }>(),
+      Coupon.query().where('isActive', true).count('* as total').pojo<{ total: number }>(),
+      Coupon.query()
+        .where('validUntil', '<', DateTime.now().plus({ days: 7 }).toJSDate())
+        .count('* as total')
+        .pojo<{ total: number }>(),
+      Order.query()
+        .where('createdAt', '>=', DateTime.now().minus({ days: 30 }).toJSDate())
+        .whereNotNull('couponId')
+        .count('* as total')
+        .pojo<{ total: number }>(),
     ])
 
-    const coupon = await Coupon.create(data)
+    return response.json({
+      total: Number(totalCouponsCount?.total) || 0,
+      active: Number(activeCouponsCount?.total) || 0,
+      expiringIn7Days: Number(expiringIn7DaysCouponsCount?.total) || 0,
+      usagesThisMonth: Number(usagesThisMonthCouponsCount?.total) || 0,
+    })
+  }
+
+  async createCoupon({ request, response }: HttpContext) {
+    const data = await createCouponValidator.validate(request.all())
+
+    const coupon = await Coupon.create({
+      ...data,
+      validFrom: DateTime.fromJSDate(data.validFrom),
+      validUntil: DateTime.fromJSDate(data.validUntil),
+    })
+
     return response.status(201).json(coupon)
   }
 
-  async show({ params, response }: HttpContext) {
-    const coupon = await Coupon.find(params.id)
-    if (!coupon) {
-      throw new CouponNotFoundException()
-    }
-    return response.json(coupon)
-  }
+  async updateCouponById({ params, request, response }: HttpContext) {
+    const { id } = await couponIdValidator.validate(params)
+    const data = await request.validateUsing(updateCouponValidator)
 
-  async update({ params, request, response }: HttpContext) {
-    const coupon = await Coupon.find(params.id)
+    const coupon = await Coupon.findOrFail(id)
 
-    if (!coupon) {
-      throw new CouponNotFoundException()
-    }
-
-    const data = request.only([
-      'code',
-      'description',
-      'discountType',
-      'discountValue',
-      'minimumOrderValue',
-      'maximumDiscount',
-      'usageLimit',
-      'isActive',
-      'validFrom',
-      'validUntil',
-    ])
-
-    coupon.merge(data)
+    coupon.merge({
+      ...data,
+      validFrom: data.validFrom ? DateTime.fromJSDate(data.validFrom) : coupon.validFrom,
+      validUntil: data.validUntil ? DateTime.fromJSDate(data.validUntil) : coupon.validUntil,
+    })
     await coupon.save()
 
     return response.json(coupon)
   }
 
-  async destroy({ params, response }: HttpContext) {
-    const coupon = await Coupon.find(params.id)
-
-    if (!coupon) {
-      throw new CouponNotFoundException()
-    }
+  async deleteCouponById({ params, response }: HttpContext) {
+    const { id } = await couponIdValidator.validate(params)
+    const coupon = await Coupon.findOrFail(id)
 
     await coupon.delete()
     return response.status(204)
