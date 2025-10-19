@@ -36,12 +36,29 @@ export const paginationValidator = vine.compile(
   })
 )
 
+export const parseToArray = (value: string | string[] | undefined) => {
+  if (value === undefined) {
+    return []
+  }
+  if (Array.isArray(value)) {
+    return value
+  }
+  return [value]
+}
+
 export const includesValidator = vine.compile(
   vine.object({
-    includes: vine
-      .string()
-      .regex(/^[a-zA-Z_][a-zA-Z0-9_]*(?:,[a-zA-Z_][a-zA-Z0-9_]*)*$/)
-      .optional(),
+    includes: vine.union([
+      vine.union.if(
+        (value) => vine.helpers.isString(value),
+        vine
+          .string()
+          .regex(/^[a-zA-Z_][a-zA-Z0-9_]*(?:,[a-zA-Z_][a-zA-Z0-9_]*)*$/)
+          .transform((value) => value?.split(','))
+      ),
+      vine.union.if((value) => Array.isArray(value), vine.array(vine.string())),
+      vine.union.else(vine.literal([] as string[])),
+    ]),
   })
 )
 

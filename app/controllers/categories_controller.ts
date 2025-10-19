@@ -3,6 +3,7 @@ import Category from '#models/category'
 import Product from '#models/product'
 import db from '@adonisjs/lucid/services/db'
 import CategoryNotFoundException from '#exceptions/category/category_not_found_exception'
+import { categorySlugValidator } from '#validators/category_validator'
 
 export default class CategoriesController {
   /**
@@ -52,23 +53,48 @@ export default class CategoriesController {
   }
 
   /**
-   * GET /categories/:id/products
-   * Lista os produtos de uma categoria e suas subcategorias (recursivamente) com busca por nome do year, brand ou model
+   * GET /categories/:slug
+   * Busca informações de uma categoria específica
    */
-  async getCategoryProducts({ params, request, response }: HttpContext) {
-    const { id } = params
-    const { name, yearName, modelName, brandName } = request.all()
+  async getCategory({ params, response }: HttpContext) {
+    const { slug } = await categorySlugValidator.validate(params)
 
-    const category = await Category.find(id)
+    const category = await Category.query()
+      .where('slug', slug)
+      .preload('parent', (query) => {
+        query.preload('parent', (subQuery) => {
+          subQuery.preload('parent', (subSubQuery) => {
+            subSubQuery.preload('parent')
+          })
+        })
+      })
+      .first()
 
     if (!category) {
       throw new CategoryNotFoundException()
     }
 
-    const subcategoryIds = await this.getAllSubcategoryIds(id)
+    return response.json(category)
+  }
+
+  /**
+   * GET /categories/:slug/products
+   * Lista os produtos de uma categoria e suas subcategorias (recursivamente) com busca por nome do year, brand ou model
+   */
+  async getCategoryProducts({ params, request, response }: HttpContext) {
+    const { slug } = await categorySlugValidator.validate(params)
+    const { name, yearName, modelName, brandName } = request.all()
+
+    const category = await Category.findBy('slug', slug)
+
+    if (!category) {
+      throw new CategoryNotFoundException()
+    }
+
+    const subcategoryIds = await this.getAllSubcategoryIds(category.id)
 
     // Incluir a categoria principal e todas as subcategorias
-    const allCategoryIds = [id, ...subcategoryIds]
+    const allCategoryIds = [category.id, ...subcategoryIds]
 
     const query = Product.query()
       .whereIn('categoryId', allCategoryIds)

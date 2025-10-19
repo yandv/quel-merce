@@ -83,37 +83,58 @@
 
             <div class="grid grid-cols-2 md:grid-cols-4 gap-6" x-show="products.length > 0">
               <template x-for="product in products" :key="product.id">
-                <div class="border rounded-lg p-4 shadow hover:shadow-md transition">
-                  <h4 class="font-medium">
+                <div class="border rounded-lg p-4 shadow hover:shadow-md transition h-96 flex flex-col">
+                  <!-- Nome do produto -->
+                  <h4 class="font-medium text-sm mb-2 line-clamp-2 min-h-[2.5rem]">
                     <span x-text="product.name"></span>
                   </h4>
-                  <img
-                    class="w-full h-40 object-cover rounded-lg"
-                    x-bind:src="product.thumbnailUrl"
-                    x-show="product.thumbnailUrl"
-                  />
-                  <p class="text-sm text-gray-500" x-show="product.years?.length > 0">
-                    Compatível com: <span x-text="product.years?.map(year => year.model.brand.name).join(', ')"></span>
+                  
+                  <!-- Imagem do produto -->
+                  <div class="w-full h-32 mb-3 flex-shrink-0">
+                    <img
+                      class="w-full h-full object-contain rounded-lg bg-gray-50"
+                      x-bind:src="product.thumbnailUrl"
+                      x-show="product.thumbnailUrl"
+                      alt="Imagem do produto"
+                    />
+                    <div x-show="!product.thumbnailUrl" class="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center">
+                      <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                  </div>
+                  
+                  <!-- Compatibilidade -->
+                  <p class="text-xs text-gray-500 mb-2 line-clamp-1" x-show="product.years?.length > 0">
+                    <span x-text="product.years?.map(year => year.model.brand.name).join(', ')"></span>
                   </p>
-                  <p class="text-sm text-gray-500" x-show="product.description">
+                  
+                  <!-- Descrição truncada -->
+                  <p class="text-xs text-gray-500 mb-2 line-clamp-2 flex-1" x-show="product.description">
                     <span x-text="product.description"></span>
                   </p>
-                  <p class="text-sm text-gray-500 mt-2" x-show="product.price">
+                  
+                  <!-- Preço -->
+                  <p class="text-sm font-semibold text-orange-600 mb-3" x-show="product.price">
                     <span x-text="Number(product.price).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })"></span>
                   </p>
-                  <a
-                    class="inline-block text-center mt-2 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"
-                    x-bind:href="`/products/${product.id}`"
-                  >
-                    Ver detalhes
-                  </a>
-                  <button
-                    class="mt-2 w-full bg-orange-500 text-white py-2 rounded-lg hover:bg-orange-600"
-                    @click="() => {
-                      $store.cart.addItem(product)
-                      $store.toast.toast(`1x ${product.name} adicionado ao carrinho`, 'success')
-                    }"
-                  >Adicionar ao carrinho</button>
+                  
+                  <!-- Botões -->
+                  <div class="mt-auto space-y-2">
+                    <a
+                      class="inline-block text-center w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 text-sm"
+                      x-bind:href="`/products/${product.slug}`"
+                    >
+                      Ver detalhes
+                    </a>
+                    <button
+                      class="w-full bg-orange-500 text-white py-2 rounded-lg hover:bg-orange-600 text-sm"
+                      @click="() => {
+                        $store.cart.addItem(product)
+                        $store.toast.toast(`1x ${product.name} adicionado ao carrinho`, 'success')
+                      }"
+                    >Adicionar ao carrinho</button>
+                  </div>
                 </div>
               </template>
             </div>
@@ -182,7 +203,7 @@
           isLoadingProducts: true,
           // paginação
           page: 1,
-          limit: 20,
+          itemsPerPage: 20,
           totalPages: 1,
           total: 0,
           // busca
@@ -204,18 +225,18 @@
               this.isLoadingProducts = true;
               const params = new URLSearchParams(window.location.search);
               this.page = parseInt(params.get("page")) || 1;
-              this.limit = parseInt(params.get("limit")) || 20;
+              this.itemsPerPage = parseInt(params.get("itemsPerPage")) || 20;
               this.search = params.get("search") || "";
-              const offset = (this.page - 1) * this.limit;
-              const query = `/api/products?offset=${offset}&limit=${this.limit}&name=${encodeURIComponent(this.search)}`;
-              const products = await fetch(query);
-              if (products.ok) {
-                const data = await products.json();
-                this.products = data.data;
-                this.total = data.cursor.total;
-                this.limit = data.cursor.limit;
-                this.page = Math.floor(data.cursor.offset / data.cursor.limit) + 1;
-                this.totalPages = Math.ceil(this.total / this.limit);
+              const query = new URLSearchParams({ page: String(this.page), itemsPerPage: String(this.itemsPerPage) });
+              if (this.search) query.set('name', this.search);
+              const res = await fetch(`/api/products?${query.toString()}`);
+              if (res.ok) {
+                const paginator = await res.json();
+                this.products = paginator?.data || [];
+                this.total = paginator?.meta?.total || 0;
+                this.itemsPerPage = paginator?.meta?.perPage || this.itemsPerPage;
+                this.page = paginator?.meta?.currentPage || this.page;
+                this.totalPages = paginator?.meta?.lastPage || 1;
               }
             } catch (err) {
               console.error("Erro ao carregar produtos", err);
@@ -264,3 +285,4 @@
     </script>
   @endslot
 @end
+

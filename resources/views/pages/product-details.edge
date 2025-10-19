@@ -38,12 +38,12 @@
               </li>
               
               <!-- Renderiza as categorias dinamicamente -->
-              <template x-for="cat in breadcrumb" :key="cat.id">
+              <template x-for="cat in breadcrumb" :key="cat.slug">
                 <li class="flex items-center">
                   <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                   </svg>
-                  <a :href="`/category/${cat.id}`" 
+                  <a :href="`/category/${cat.slug}`" 
                      class="hover:text-orange-600"
                      x-text="cat.name"></a>
                 </li>
@@ -95,7 +95,7 @@
               <div class="space-y-6">
                 <div>
                   <h1 class="text-3xl font-bold text-gray-900 mb-2" x-text="product.name"></h1>
-                  <p class="text-lg text-gray-600" x-text="product.description || 'Descrição não disponível'"></p>
+                  <p class="text-lg text-gray-600" x-show="product.description" x-text="product.description"></p>
                 </div>
 
                 <!-- Price -->
@@ -129,6 +129,7 @@
                         id="quantity"
                         x-model="quantity"
                         min="1"
+                        
                         class="w-16 text-center border-0 focus:ring-0 focus:outline-none"
                       />
                       <button 
@@ -174,12 +175,12 @@
               </div>
 
               <!-- Fiscal -->
-              <div>
+              <div x-show="product.ncm" class="flex justify-between items-center py-2 border-b border-gray-100">
                 <h3 class="text-lg font-semibold text-gray-800 mb-3 border-b border-gray-200 pb-2">Fiscal</h3>
                 <div class="grid grid-cols-1 gap-4">
                   <div class="flex justify-between items-center py-2 border-b border-gray-100">
                     <span class="text-gray-600">NCM</span>
-                    <span class="font-medium">8708.99.00</span>
+                    <span class="font-medium" x-text="product.ncm"></span>
                   </div>
                 </div>
               </div>
@@ -243,7 +244,7 @@
                   
                   <template x-for="vehicle in vehicles" :key="vehicle.id">
                     <tr class="hover:bg-gray-50">
-                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" x-text="vehicle.brand?.name || 'N/A'"></td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" x-text="vehicle.model?.brand?.name || 'N/A'"></td>
                       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="vehicle.model?.name || 'N/A'"></td>
                       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="vehicle.year || 'N/A'"></td>
                     </tr>

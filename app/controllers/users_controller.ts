@@ -22,7 +22,14 @@ import UserNotEmailVerifiedYetException from '#exceptions/user/user_not_email_ve
 import { EmailService } from '#services/email_service'
 import { inject } from '@adonisjs/core'
 import UserEmailAlreadyVerifiedException from '#exceptions/user/user_email_already_verified_exception'
-import { includesValidator } from '#validators/default_validators'
+import {
+  includesValidator,
+  parseToArray,
+  sortAndPaginationValidator,
+} from '#validators/default_validators'
+import { userQueryValidator } from '#validators/user_validator'
+import db from '@adonisjs/lucid/services/db'
+import { UserRole } from '#models/user'
 
 @inject()
 export default class UsersController {
@@ -50,6 +57,91 @@ export default class UsersController {
     })
   }
 
+  /**
+   * GET /api/users
+   * Lista usuários com filtros básicos e paginação para o admin
+   */
+  async getUsers({ request, response }: HttpContext) {
+    const {
+      sort,
+      page = 1,
+      itemsPerPage = 10,
+    } = await sortAndPaginationValidator.validate(request.all())
+    const { search, role, emailVerified } = await userQueryValidator.validate(request.all())
+
+    const query = User.query()
+
+    if (sort) {
+      query.orderBy(sort.map((item) => ({ column: item.field, order: item.order })))
+    }
+
+    if (search) {
+      query.where((q) => {
+        q.whereRaw('LOWER(UNACCENT(email)) LIKE ?', [`%${search}%`])
+        q.orWhereRaw('LOWER(UNACCENT(full_name)) LIKE ?', [`%${search}%`])
+      })
+    }
+
+    if (role) {
+      query.where('role', role)
+    }
+
+    if (emailVerified === 'true') {
+      query.whereNotNull('email_verified_at')
+    } else if (emailVerified === 'false') {
+      query.whereNull('email_verified_at')
+    }
+
+    const users = await query.paginate(page, itemsPerPage)
+
+    return response.json(users)
+  }
+
+  /**
+   * GET /api/users/summary
+   * Estatísticas para listagem de usuários (cards)
+   */
+  async getUsersSummary({ response }: HttpContext) {
+    const [stats] = await db
+      .from('users')
+      .select(
+        db.raw('COUNT(*)::int as total'),
+        db.raw("SUM(CASE WHEN role = 'ADMIN' THEN 1 ELSE 0 END)::int as admins"),
+        db.raw("SUM(CASE WHEN role = 'SELLER' THEN 1 ELSE 0 END)::int as sellers"),
+        db.raw("SUM(CASE WHEN role = 'CUSTOMER' THEN 1 ELSE 0 END)::int as customers"),
+        db.raw('SUM(CASE WHEN email_verified_at IS NOT NULL THEN 1 ELSE 0 END)::int as verified')
+      )
+
+    return response.json({
+      total: stats.total || 0,
+      admins: stats.admins || 0,
+      sellers: stats.sellers || 0,
+      customers: stats.customers || 0,
+      verified: stats.verified || 0,
+    })
+  }
+
+  /**
+   * PATCH /api/users/:id/admin
+   * Atualiza dados de um usuário (somente ADMIN)
+   */
+  async adminUpdateUser({ params, request, response }: HttpContext) {
+    const { id } = await userIdValidator.validate(params)
+    const fullName = request.input('fullName') as string | undefined
+    const role = request.input('role') as UserRole | undefined
+
+    const user = await User.find(id)
+    if (!user) {
+      throw new UserNotFoundException()
+    }
+
+    if (fullName !== undefined) user.fullName = fullName
+    if (role !== undefined) user.role = role
+
+    await user.save()
+
+    return response.json(user)
+  }
   async logout({ auth }: HttpContext) {
     await auth.use('web').logout()
   }
@@ -157,6 +249,10 @@ export default class UsersController {
       throw new UserNotFoundException()
     }
 
+    if (user.emailVerifiedAt) {
+      throw new UserEmailAlreadyVerifiedException()
+    }
+
     // Verificar códigos de verificação das últimas 12 horas
     const existingCodes = await UserEmailVerificationCode.query()
       .where('user_id', user.id)
@@ -200,10 +296,11 @@ export default class UsersController {
   async getUserById({ params, request, response }: HttpContext) {
     const { id } = await userIdValidator.validate(params)
     const { includes } = await includesValidator.validate(request.all())
+    const includeArray = parseToArray(includes)
 
     const query = User.query().where('id', id)
 
-    if (includes?.includes('vehicles')) {
+    if (includeArray.includes('vehicles')) {
       query.preload('vehicles', (vehicleQuery) => {
         vehicleQuery.preload('year', (yearQuery) => {
           yearQuery.preload('model', (modelQuery) => {
@@ -225,6 +322,7 @@ export default class UsersController {
   async getUserOrders({ params, request, response }: HttpContext) {
     const { id } = await userIdValidator.validate(params)
     const { includes } = await includesValidator.validate(request.all())
+    const includeArray = parseToArray(includes)
 
     const user = await User.find(id)
 
@@ -234,7 +332,7 @@ export default class UsersController {
 
     const ordersQuery = user.related('orders').query()
 
-    if (includes?.includes('items')) {
+    if (includeArray.includes('items')) {
       ordersQuery.preload('items', (itemQuery) => {
         itemQuery.preload('product')
       })
@@ -252,6 +350,7 @@ export default class UsersController {
   async getUserVehicles({ params, request, response }: HttpContext) {
     const { id } = await userIdValidator.validate(params)
     const { includes } = await includesValidator.validate(request.all())
+    const includeArray = parseToArray(includes)
 
     const user = await User.find(id)
 
@@ -261,17 +360,17 @@ export default class UsersController {
 
     const vehiclesQuery = user.related('vehicles').query()
 
-    if (includes?.includes('year')) {
+    if (includeArray.includes('year')) {
       vehiclesQuery.preload('year')
     }
 
-    if (includes?.includes('model')) {
+    if (includeArray.includes('model')) {
       vehiclesQuery.preload('year', (yearQuery) => {
         yearQuery.preload('model')
       })
     }
 
-    if (includes?.includes('brand')) {
+    if (includeArray.includes('brand')) {
       vehiclesQuery.preload('year', (yearQuery) => {
         yearQuery.preload('model', (modelQuery) => {
           modelQuery.preload('brand')

@@ -1,15 +1,10 @@
-import DomainException from '#exceptions/domain_exception'
+import { Exception } from '@adonisjs/core/exceptions'
 
-export default class ProductNotFoundException extends DomainException {
-  static status = 400
-  static code = 'PRODUCT_NOT_FOUND'
-  static message = 'Produto não encontrado na base de dados'
+export default class ProductNotFoundException extends Exception {
+  static status = 404
+  static code = 'E_PRODUCT_NOT_FOUND'
 
-  constructor(productIds?: string[]) {
-    const message =
-      productIds && productIds.length > 0
-        ? `Os seguintes produtos não foram encontrados: ${productIds.join(', ')}`
-        : ProductNotFoundException.message
-    super(message)
+  constructor() {
+    super('Produto não encontrado')
   }
 }

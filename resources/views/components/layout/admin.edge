@@ -1,4 +1,7 @@
 @layout.app()
+  @slot('meta')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  @endslot
   @slot('main')
     <div class="flex h-screen bg-gray-50" x-data="{ sidebarOpen: false }">
       @include('components/admin/sidebar')

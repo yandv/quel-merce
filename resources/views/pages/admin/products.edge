@@ -1,246 +1,1042 @@
 @layout.admin()
-  @slot('main')
-    <div
-      class="p-6"
-      x-data="{ pageTitle: 'Produtos', pageDescription: 'Gerencie o catálogo de produtos' }"
-    >
-      <!-- Page Header -->
-      <div class="mb-6">
+@slot('main')
+<div class="p-6" x-data="productManager()" x-init="init()">
+  <div class="mb-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-3xl font-bold text-gray-900">Produtos</h2>
+        <p class="mt-1 text-sm text-gray-500">Gerencie produtos e catálogo</p>
+      </div>
+      <button x-show="isAdmin" x-cloak @click="openCreateModal()"
+        class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors">
+        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Criar Produto
+      </button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+    <div class="bg-white p-6 rounded-lg shadow">
+      <div class="flex items-center">
+        <div class="p-2 bg-blue-100 rounded-lg">
+          <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+          </svg>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-500">Total de Produtos</p>
+          <p class="text-2xl font-semibold text-gray-900" x-text="stats.total"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow">
+      <div class="flex items-center">
+        <div class="p-2 bg-green-100 rounded-lg">
+          <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-500">Produtos Ativos</p>
+          <p class="text-2xl font-semibold text-gray-900" x-text="stats.active"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow">
+      <div class="flex items-center">
+        <div class="p-2 bg-yellow-100 rounded-lg">
+          <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-500">Com Imagens</p>
+          <p class="text-2xl font-semibold text-gray-900" x-text="stats.withImages"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow">
+      <div class="flex items-center">
+        <div class="p-2 bg-purple-100 rounded-lg">
+          <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+          </svg>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-500">Com SKU</p>
+          <p class="text-2xl font-semibold text-gray-900" x-text="stats.withSku"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <template x-if="!loading">
+    <div class="bg-white rounded-lg shadow">
+      <div class="px-6 py-4 border-b border-gray-200">
         <div class="flex items-center justify-between">
-          <div>
-            <h2 class="text-3xl font-bold text-gray-900">
-              Produtos
-            </h2>
-            <p class="mt-1 text-sm text-gray-500">
-              Gerencie o catálogo de produtos da loja
-            </p>
-          </div>
-          <button class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors">
-            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Adicionar Produto
-          </button>
-        </div>
-      </div>
-
-      <!-- Stats Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <div class="bg-white p-6 rounded-lg shadow">
-          <div class="flex items-center">
-            <div class="p-2 bg-blue-100 rounded-lg">
-              <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                />
+          <h3 class="text-lg font-medium text-gray-900">Lista de Produtos</h3>
+          <div class="flex items-center space-x-4">
+            <div class="relative">
+              <input type="text" x-model="searchQuery" @input.debounce.500ms="searchProducts()"
+                placeholder="Buscar produtos..."
+                class="w-64 pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200">
+              <svg class="absolute left-3 top-3 w-4 h-4 text-gray-400" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-500">
-                Total de Produtos
-              </p>
-              <p class="text-2xl font-semibold text-gray-900">
-                1,234
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white p-6 rounded-lg shadow">
-          <div class="flex items-center">
-            <div class="p-2 bg-green-100 rounded-lg">
-              <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-500">
-                Produtos Ativos
-              </p>
-              <p class="text-2xl font-semibold text-gray-900">
-                1,180
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white p-6 rounded-lg shadow">
-          <div class="flex items-center">
-            <div class="p-2 bg-yellow-100 rounded-lg">
-              <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-                />
-              </svg>
-            </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-500">
-                Estoque Baixo
-              </p>
-              <p class="text-2xl font-semibold text-gray-900">
-                54
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white p-6 rounded-lg shadow">
-          <div class="flex items-center">
-            <div class="p-2 bg-red-100 rounded-lg">
-              <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-500">
-                Produtos Inativos
-              </p>
-              <p class="text-2xl font-semibold text-gray-900">
-                54
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Products Table -->
-      <div class="bg-white rounded-lg shadow">
-        <div class="px-6 py-4 border-b border-gray-200">
-          <div class="flex items-center justify-between">
-            <h3 class="text-lg font-medium text-gray-900">
-              Lista de Produtos
-            </h3>
-            <div class="flex items-center space-x-4">
-              <div class="relative">
-                <input
-                  type="text"
-                  placeholder="Buscar produtos..."
-                  class="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                />
-                <svg
-                  class="absolute left-3 top-2.5 w-4 h-4 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
+            <div class="relative">
+              <select x-model="statusFilter" @change="searchProducts()"
+                class="px-3 py-2.5 pr-8 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200 appearance-none bg-white">
+                <option value="">Todos os status</option>
+                <option value="true">Ativo</option>
+                <option value="false">Inativo</option>
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
-              <select
-                class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-              >
-                <option>
-                  Todos os status
-                </option>
-                <option>
-                  Ativo
-                </option>
-                <option>
-                  Inativo
-                </option>
+            </div>
+            <div class="relative">
+              <select x-model="categoryFilter" @change="searchProducts()"
+                class="px-3 py-2.5 pr-8 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200 appearance-none bg-white">
+                <option value="">Todas as categorias</option>
+                <template x-for="category in categories" :key="category.id">
+                  <option :value="category.id" x-text="category.name"></option>
+                </template>
               </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Produto
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Categoria
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Preço
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Estoque
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ações
-                </th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <!-- Sample row -->
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <button @click="toggleSort('name')"
+                  class="flex items-center space-x-1 hover:text-gray-700 focus:outline-none focus:text-gray-700">
+                  <span>Nome</span>
+                  <div class="flex items-center space-x-1">
+                    <div class="flex flex-col">
+                      <svg class="w-3 h-3" :class="getSortIcon('name', 'asc')" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                          d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"
+                          clip-rule="evenodd" />
+                      </svg>
+                      <svg class="w-3 h-3 -mt-1" :class="getSortIcon('name', 'desc')" fill="currentColor"
+                        viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                          d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                          clip-rule="evenodd" />
+                      </svg>
+                    </div>
+                    <span x-show="sortFields.length > 1 && getSortPriority('name') > 0" x-text="getSortPriority('name')"
+                      class="w-4 h-4 bg-orange-600 text-white text-xs rounded-full flex items-center justify-center font-bold"
+                      style="font-size: 10px;">
+                    </span>
+                  </div>
+                </button>
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <button @click="toggleSort('price')"
+                  class="flex items-center space-x-1 hover:text-gray-700 focus:outline-none focus:text-gray-700">
+                  <span>Preço</span>
+                  <div class="flex items-center space-x-1">
+                    <div class="flex flex-col">
+                      <svg class="w-3 h-3" :class="getSortIcon('price', 'asc')" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                          d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"
+                          clip-rule="evenodd" />
+                      </svg>
+                      <svg class="w-3 h-3 -mt-1" :class="getSortIcon('price', 'desc')" fill="currentColor"
+                        viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                          d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                          clip-rule="evenodd" />
+                      </svg>
+                    </div>
+                    <span x-show="sortFields.length > 1 && getSortPriority('price') > 0" x-text="getSortPriority('price')"
+                      class="w-4 h-4 bg-orange-600 text-white text-xs rounded-full flex items-center justify-center font-bold"
+                      style="font-size: 10px;">
+                    </span>
+                  </div>
+                </button>
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <button @click="toggleSort('category')"
+                  class="flex items-center space-x-1 hover:text-gray-700 focus:outline-none focus:text-gray-700">
+                  <span>Categoria</span>
+                  <div class="flex items-center space-x-1">
+                    <div class="flex flex-col">
+                      <svg class="w-3 h-3" :class="getSortIcon('category', 'asc')" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                          d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"
+                          clip-rule="evenodd" />
+                      </svg>
+                      <svg class="w-3 h-3 -mt-1" :class="getSortIcon('category', 'desc')" fill="currentColor"
+                        viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                          d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                          clip-rule="evenodd" />
+                      </svg>
+                    </div>
+                    <span x-show="sortFields.length > 1 && getSortPriority('category') > 0" x-text="getSortPriority('category')"
+                      class="w-4 h-4 bg-orange-600 text-white text-xs rounded-full flex items-center justify-center font-bold"
+                      style="font-size: 10px;">
+                    </span>
+                  </div>
+                </button>
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <button @click="toggleSort('isActive')"
+                  class="flex items-center space-x-1 hover:text-gray-700 focus:outline-none focus:text-gray-700">
+                  <span>Status</span>
+                  <div class="flex items-center space-x-1">
+                    <div class="flex flex-col">
+                      <svg class="w-3 h-3" :class="getSortIcon('isActive', 'asc')" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                          d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"
+                          clip-rule="evenodd" />
+                      </svg>
+                      <svg class="w-3 h-3 -mt-1" :class="getSortIcon('isActive', 'desc')" fill="currentColor"
+                        viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                          d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                          clip-rule="evenodd" />
+                      </svg>
+                    </div>
+                    <span x-show="sortFields.length > 1 && getSortPriority('isActive') > 0" x-text="getSortPriority('isActive')"
+                      class="w-4 h-4 bg-orange-600 text-white text-xs rounded-full flex items-center justify-center font-bold"
+                      style="font-size: 10px;">
+                    </span>
+                  </div>
+                </button>
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <button @click="toggleSort('createdAt')"
+                  class="flex items-center space-x-1 hover:text-gray-700 focus:outline-none focus:text-gray-700">
+                  <span>Criado em</span>
+                  <div class="flex items-center space-x-1">
+                    <div class="flex flex-col">
+                      <svg class="w-3 h-3" :class="getSortIcon('createdAt', 'asc')" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                          d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"
+                          clip-rule="evenodd" />
+                      </svg>
+                      <svg class="w-3 h-3 -mt-1" :class="getSortIcon('createdAt', 'desc')" fill="currentColor"
+                        viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                          d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                          clip-rule="evenodd" />
+                      </svg>
+                    </div>
+                    <span x-show="sortFields.length > 1 && getSortPriority('createdAt') > 0" x-text="getSortPriority('createdAt')"
+                      class="w-4 h-4 bg-orange-600 text-white text-xs rounded-full flex items-center justify-center font-bold"
+                      style="font-size: 10px;">
+                    </span>
+                  </div>
+                </button>
+              </th>
+              <th x-show="isAdmin" x-cloak class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <template x-for="product in products" :key="product.id">
               <tr>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
                     <div class="flex-shrink-0 h-10 w-10">
-                      <div class="h-10 w-10 bg-gray-200 rounded-lg">
+                      <img x-show="product.thumbnailUrl" :src="product.thumbnailUrl" :alt="product.name"
+                        class="h-10 w-10 rounded-lg object-cover">
+                      <div x-show="!product.thumbnailUrl"
+                        class="h-10 w-10 rounded-lg bg-gray-200 flex items-center justify-center">
+                        <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
                       </div>
                     </div>
                     <div class="ml-4">
-                      <div class="text-sm font-medium text-gray-900">
-                        Filtro de Óleo
-                      </div>
-                      <div class="text-sm text-gray-500">
-                        ID: #12345
-                      </div>
+                      <div class="text-sm font-medium text-gray-900" x-text="product.name"></div>
+                      <div class="text-sm text-gray-500" x-text="product.sku || 'Sem SKU'"></div>
                     </div>
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  Filtros
+                  <span x-text="'R$ ' + parseFloat(product.price).toFixed(2).replace('.', ',')"></span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  R$ 45,90
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  25
+                  <span x-text="product.category?.name || 'Sem categoria'"></span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                    Ativo
+                  <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                    :class="!product.disabledAt ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                    x-text="!product.disabledAt ? 'Ativo' : 'Inativo'">
                   </span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <a href="#" class="text-orange-600 hover:text-orange-900 mr-3">Editar</a>
-                  <a href="#" class="text-red-600 hover:text-red-900">Excluir</a>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <span x-text="new Date(product.createdAt).toLocaleDateString('pt-BR', { hour: '2-digit', minute: '2-digit' })"></span>
+                </td>
+                <td x-show="isAdmin" x-cloak class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <button @click="openEditModal(product)" class="text-orange-600 hover:text-orange-900 mr-3">Editar</button>
+                  <button @click="deleteProduct(product.id)" class="text-red-600 hover:text-red-900">Excluir</button>
                 </td>
               </tr>
-            </tbody>
-          </table>
-        </div>
+            </template>
 
-        <!-- Pagination -->
-        <div class="px-6 py-4 border-t border-gray-200">
-          <div class="flex items-center justify-between">
-            <div class="text-sm text-gray-700">
-              Mostrando <span class="font-medium">1</span>a <span class="font-medium">10</span>de <span class="font-medium">1,234</span>resultados
-            </div>
-            <div class="flex items-center space-x-2">
-              <button class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50">Anterior</button>
-              <button class="px-3 py-1 bg-orange-600 text-white rounded-md text-sm">1</button>
-              <button class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50">2</button>
-              <button class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50">3</button>
-              <button class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50">Próximo</button>
-            </div>
+            <!-- Empty state -->
+            <tr x-show="products.length === 0">
+              <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                <div class="flex flex-col items-center">
+                  <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                  </svg>
+                  <p class="text-lg font-medium">Nenhum produto encontrado</p>
+                  <p class="text-sm">Altere os filtros para encontrar produtos</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="px-6 py-4 border-t border-gray-200">
+        <div class="flex items-center justify-between">
+          <div class="text-sm text-gray-700">
+            Mostrando <span class="font-medium" x-text="pagination.from"></span> a <span class="font-medium"
+              x-text="pagination.to"></span> de <span class="font-medium" x-text="pagination.total"></span> resultados
+          </div>
+          <div class="flex items-center space-x-2">
+            <button @click="changePage(pagination.currentPage - 1)" :disabled="pagination.currentPage <= 1"
+              class="flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+              Anterior
+            </button>
+
+            <template x-for="page in getVisiblePages()" :key="page">
+              <button @click="changePage(page)"
+                :class="page === pagination.currentPage ? 'px-3 py-1 bg-orange-600 text-white rounded-md text-sm' : 'px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50'"
+                x-text="page">
+              </button>
+            </template>
+
+            <button @click="changePage(pagination.currentPage + 1)"
+              :disabled="pagination.currentPage >= pagination.totalPages"
+              class="flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+              Próximo
+              <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>
     </div>
-  @endslot
+  </template>
+
+  <!-- Loading State -->
+  <div x-show="loading" class="flex items-center justify-center h-64">
+    <div class="text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
+      <p class="mt-4 text-gray-500">Carregando produtos...</p>
+    </div>
+  </div>
+
+  <!-- Product Modal -->
+  <div x-show="showModal" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
+    x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
+    x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 z-50 overflow-y-auto"
+    x-cloak>
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+      <!-- Background overlay -->
+      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeModal()"></div>
+
+      <!-- Modal panel -->
+      <div
+        class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+        <form @submit.prevent="saveProduct()">
+          <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div class="sm:flex sm:items-start">
+              <div class="w-full">
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-6"
+                  x-text="isEditing ? 'Editar Produto' : 'Criar Produto'"></h3>
+
+                <div class="space-y-8">
+                  <!-- Seção 1: Informações Básicas -->
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="text-sm font-semibold text-gray-800 mb-4 flex items-center">
+                      <svg class="w-4 h-4 mr-2 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Informações Básicas
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <!-- Nome -->
+                      <div class="space-y-1">
+                        <label for="name" class="block text-sm font-medium text-gray-700">
+                          Nome
+                          <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" id="name" name="name" x-model="form.name" required
+                          placeholder="Nome do produto"
+                          class="block w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200" />
+                      </div>
+
+                      <!-- SKU -->
+                      <div class="space-y-1">
+                        <label for="sku" class="block text-sm font-medium text-gray-700">
+                          SKU
+                        </label>
+                        <input type="text" id="sku" name="sku" x-model="form.sku"
+                          placeholder="Código do produto"
+                          class="block w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200" />
+                      </div>
+                    </div>
+
+                    <!-- Descrição -->
+                    <div class="mt-4 space-y-1">
+                      <label for="description" class="block text-sm font-medium text-gray-700">
+                        Descrição
+                      </label>
+                      <textarea id="description" name="description" x-model="form.description" rows="3"
+                        placeholder="Descreva o produto..."
+                        class="block w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200 resize-vertical"></textarea>
+                    </div>
+                  </div>
+
+                  <!-- Seção 2: Preço e Categoria -->
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="text-sm font-semibold text-gray-800 mb-4 flex items-center">
+                      <svg class="w-4 h-4 mr-2 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                      </svg>
+                      Preço e Categoria
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <!-- Preço -->
+                      <div class="space-y-1">
+                        <label for="price" class="block text-sm font-medium text-gray-700">
+                          Preço
+                          <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 text-sm">R$</span>
+                          </div>
+                          <input type="number" id="price" name="price" x-model="form.price" step="0.01" min="0"
+                            placeholder="0.00" required
+                            class="block w-full pl-8 pr-3 py-2.5 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200" />
+                        </div>
+                      </div>
+
+                      <!-- Categoria -->
+                      <div class="space-y-1">
+                        <label for="categoryId" class="block text-sm font-medium text-gray-700">
+                          Categoria
+                          <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                          <select id="categoryId" name="categoryId" x-model="form.categoryId" required
+                            class="block w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200 appearance-none bg-white">
+                            <option value="" disabled>Selecione uma categoria</option>
+                            <template x-for="category in categories" :key="category.id">
+                              <option :value="category.id" x-text="category.name"></option>
+                            </template>
+                          </select>
+                          <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Seção 3: Imagem e Anos -->
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="text-sm font-semibold text-gray-800 mb-4 flex items-center">
+                      <svg class="w-4 h-4 mr-2 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      Imagem e Compatibilidade
+                    </h4>
+                    <div class="space-y-4">
+                      <!-- URL da Imagem -->
+                      <div class="space-y-1">
+                        <label for="thumbnailUrl" class="block text-sm font-medium text-gray-700">
+                          URL da Imagem
+                        </label>
+                        <input type="url" id="thumbnailUrl" name="thumbnailUrl" x-model="form.thumbnailUrl"
+                          placeholder="https://exemplo.com/imagem.jpg"
+                          class="block w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200" />
+                      </div>
+
+                      <!-- Carros Compatíveis -->
+                      <div class="space-y-4">
+                        <label class="block text-sm font-medium text-gray-700">
+                          Carros Compatíveis
+                        </label>
+                        
+                        <!-- Busca de Carros -->
+                        <div class="space-y-2" data-car-dropdown>
+                          <div class="relative">
+                            <input type="text" x-model="carSearchQuery" @input.debounce.300ms="searchCars()" @focus="showCarDropdown = true"
+                              x-ref="carSearchInput"
+                              placeholder="Buscar carros por marca, modelo ou ano..."
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                            <svg class="absolute right-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                          </div>
+                          
+                          <!-- Dropdown de Carros Encontrados -->
+                          <div x-show="showCarDropdown && carSearchResults.length > 0" 
+                            class="absolute z-[9999] max-h-48 overflow-y-auto bg-white border border-gray-300 rounded-lg shadow-xl mt-1"
+                            style="width: calc(100% - 2px); left: 1px; right: 1px;"
+                            x-transition:enter="transition ease-out duration-200"
+                            x-transition:enter-start="opacity-0 transform scale-95"
+                            x-transition:enter-end="opacity-100 transform scale-100"
+                            x-transition:leave="transition ease-in duration-150"
+                            x-transition:leave-start="opacity-100 transform scale-100"
+                            x-transition:leave-end="opacity-0 transform scale-95">
+                            <template x-for="car in carSearchResults" :key="car.id">
+                              <div class="flex items-center p-3 hover:bg-gray-50 border-b border-gray-200 last:border-b-0 cursor-pointer"
+                                @click="toggleCarSelection(car.id)">
+                                <div class="flex items-center space-x-3">
+                                  <div>
+                                    <div class="font-medium text-gray-900" x-text="car.model?.name + ' (' + car.year + ')'"></div>
+                                    <div class="text-sm text-gray-500" x-text="car.model?.brand?.name"></div>
+                                  </div>
+                                </div>
+                              </div>
+                            </template>
+                          </div>
+                          
+                          <!-- Mensagem quando não há resultados -->
+                          <div x-show="showCarDropdown && carSearchQuery && carSearchResults.length === 0" 
+                            class="absolute z-[9999] bg-white border border-gray-300 rounded-lg shadow-xl p-4 text-center text-gray-500 mt-1"
+                            style="width: calc(100% - 2px); left: 1px; right: 1px;"
+                            x-transition:enter="transition ease-out duration-200"
+                            x-transition:enter-start="opacity-0 transform scale-95"
+                            x-transition:enter-end="opacity-100 transform scale-100"
+                            x-transition:leave="transition ease-in duration-150"
+                            x-transition:leave-start="opacity-100 transform scale-100"
+                            x-transition:leave-end="opacity-0 transform scale-95">
+                            <svg class="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.29-1.009-5.824-2.709M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <p>Nenhum carro encontrado</p>
+                          </div>
+                        </div>
+                        
+                        <!-- Carros Selecionados -->
+                        <div x-show="selectedCars.length > 0" class="space-y-2">
+                          <div class="flex items-center justify-between">
+                            <h4 class="text-sm font-medium text-gray-700">Carros Selecionados</h4>
+                            <span class="text-xs text-gray-500" x-text="selectedCars.length + ' selecionado(s)'"></span>
+                          </div>
+                          <div class="max-h-32 overflow-y-auto border border-gray-200 rounded-lg bg-gray-50">
+                            <template x-for="car in selectedCars" :key="car.id">
+                              <div class="flex items-center justify-between p-2 border-b border-gray-200 last:border-b-0">
+                                <div class="flex items-center space-x-2">
+                                  <span class="text-sm font-medium text-gray-900" x-text="car.model?.brand?.name + ' ' + car.model?.name + ' (' + car.year + ')'"></span>
+                                </div>
+                                <button type="button" @click="removeCarSelection(car.id)"
+                                  class="text-red-600 hover:text-red-800 text-sm">
+                                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                </button>
+                              </div>
+                            </template>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Seção 4: Status -->
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="text-sm font-semibold text-gray-800 mb-4 flex items-center">
+                      <svg class="w-4 h-4 mr-2 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Status do Produto
+                    </h4>
+                    <div class="flex items-start">
+                      <div class="flex items-center h-5">
+                        <input type="checkbox" id="isActive" name="isActive" x-model="form.isActive"
+                          class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded transition-colors duration-200" />
+                      </div>
+                      <div class="ml-3 text-sm">
+                        <label for="isActive" class="font-medium text-gray-700 cursor-pointer">
+                          Produto ativo
+                        </label>
+                        <p class="text-gray-500 text-xs mt-1">Desmarque para desativar o produto</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+            <button type="submit" :disabled="saving"
+              class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-orange-600 text-base font-medium text-white hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50">
+              <span x-show="!saving" x-text="isEditing ? 'Salvar Alterações' : 'Criar Produto'"></span>
+              <span x-show="saving">Salvando...</span>
+            </button>
+            <button type="button" @click="closeModal()"
+              class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function productManager() {
+    return {
+      isAdmin: {{ auth.user?.role === 'ADMIN' ? 'true' : 'false' }},
+      // State
+      loading: true,
+      products: [],
+      categories: [],
+      years: [],
+      carSearchQuery: '',
+      carSearchResults: [],
+      selectedCars: [],
+      showCarDropdown: false,
+      stats: {
+        total: 0,
+        active: 0,
+        withImages: 0,
+        withSku: 0
+      },
+      pagination: {
+        currentPage: 1,
+        totalPages: 1,
+        total: 0,
+        from: 0,
+        to: 0
+      },
+      searchQuery: '',
+      statusFilter: '',
+      categoryFilter: '',
+      sortFields: [],
+      showModal: false,
+      isEditing: false,
+      saving: false,
+      editingId: null,
+      form: {
+        name: '',
+        description: '',
+        price: '',
+        sku: '',
+        thumbnailUrl: '',
+        categoryId: '',
+        isActive: true,
+        yearIds: []
+      },
+
+      // Methods
+      async init() {
+        await Promise.all([
+          this.loadProducts(),
+          this.loadStats(),
+          this.loadCategories(),
+          this.loadYears()
+        ]);
+
+        // Fechar dropdown quando clicar fora
+        document.addEventListener('click', (e) => {
+          if (!e.target.closest('[data-car-dropdown]')) {
+            this.showCarDropdown = false;
+          }
+        });
+      },
+
+      async loadProducts() {
+        try {
+          const params = new URLSearchParams({
+            page: this.pagination.currentPage.toString(),
+            itemsPerPage: '10'
+          });
+
+          if (this.searchQuery) params.append('name', this.searchQuery);
+          if (this.statusFilter) params.append('active', this.statusFilter);
+          if (this.categoryFilter) params.append('categoryId', this.categoryFilter);
+
+          // Adicionar parâmetro de ordenação
+          const sortParam = this.buildSortParam();
+          if (sortParam) params.append('sort', sortParam);
+
+          params.append('includes', 'category,years');
+          const response = await fetch(`/api/products?${params}`);
+          const data = await response.json();
+
+          const paginator = data;
+          this.products = paginator?.data || [];
+          const currentPage = paginator?.meta?.currentPage || 1;
+          const perPage = paginator?.meta?.perPage || 10;
+          const total = paginator?.meta?.total || 0;
+          const from = total > 0 ? ((currentPage - 1) * perPage) + 1 : 0;
+          const to = Math.min(currentPage * perPage, total);
+          
+          this.pagination = {
+            currentPage: currentPage,
+            totalPages: paginator?.meta?.lastPage || 1,
+            total: total,
+            from: from,
+            to: to
+          };
+
+        } catch (error) {
+          console.error('Erro ao carregar produtos:', error);
+        } finally {
+          this.loading = false;
+        }
+      },
+
+      async loadStats() {
+        try {
+          const response = await fetch('/api/products/summary');
+          const data = await response.json();
+          this.stats = data;
+        } catch (error) {
+          console.error('Erro ao carregar estatísticas:', error);
+        }
+      },
+
+      async loadCategories() {
+        try {
+          const response = await fetch('/api/categories');
+          const data = await response.json();
+          // Flatten the hierarchical categories for the select
+          this.categories = this.flattenCategories(data);
+        } catch (error) {
+          console.error('Erro ao carregar categorias:', error);
+        }
+      },
+
+      flattenCategories(categories, level = 0) {
+        let result = [];
+        for (const category of categories) {
+          result.push({
+            ...category,
+            name: '  '.repeat(level) + category.name
+          });
+          if (category.children && category.children.length > 0) {
+            result = result.concat(this.flattenCategories(category.children, level + 1));
+          }
+        }
+        return result;
+      },
+
+      async loadYears() {
+        try {
+          const params = new URLSearchParams({
+            itemsPerPage: '100',
+            includes: 'model,brand'
+          });
+          const response = await fetch(`/api/years?${params}`);
+          const data = await response.json();
+          this.years = data.data || data?.data?.data || [];
+        } catch (error) {
+          console.error('Erro ao carregar anos:', error);
+        }
+      },
+
+      async searchCars() {
+        if (!this.carSearchQuery || this.carSearchQuery.length < 2) {
+          this.carSearchResults = [];
+          this.showCarDropdown = false;
+          return;
+        }
+
+        this.showCarDropdown = true;
+
+        try {
+          const params = new URLSearchParams({
+            itemsPerPage: '50',
+            includes: 'model,brand',
+            search: this.carSearchQuery
+          });
+          
+          const response = await fetch(`/api/years?${params}`);
+          const data = await response.json();
+          this.carSearchResults = data.data || data?.data?.data || [];
+        } catch (error) {
+          console.error('Erro ao buscar carros:', error);
+          this.carSearchResults = [];
+        }
+      },
+
+      toggleCarSelection(carId) {
+        if (this.form.yearIds.includes(carId)) {
+          this.removeCarSelection(carId);
+        } else {
+          this.addCarSelection(carId);
+        }
+      },
+
+      addCarSelection(carId) {
+        if (!this.form.yearIds.includes(carId)) {
+          this.form.yearIds.push(carId);
+          this.updateSelectedCars();
+          
+          // Remove imediatamente da lista de resultados
+          this.carSearchResults = this.carSearchResults.filter(car => car.id !== carId);
+          
+          // Fecha dropdown se não há mais resultados
+          if (this.carSearchResults.length === 0) {
+            this.showCarDropdown = false;
+          }
+        }
+      },
+
+      removeCarSelection(carId) {
+        this.form.yearIds = this.form.yearIds.filter(id => id !== carId);
+        this.updateSelectedCars();
+        
+        // Se há busca ativa, refaz para mostrar o carro removido
+        if (this.carSearchQuery && this.carSearchQuery.length >= 2) {
+          this.searchCars();
+        }
+      },
+
+      updateSelectedCars() {
+        // Usar sempre a lista geral de years e ordenar pela marca
+        this.selectedCars = this.years
+          .filter(year => this.form.yearIds.includes(year.id))
+          .sort((a, b) => {
+            const brandA = a.model?.brand?.name || '';
+            const brandB = b.model?.brand?.name || '';
+            return brandA.localeCompare(brandB);
+          });
+      },
+
+
+      async searchProducts() {
+        this.pagination.currentPage = 1;
+        await this.loadProducts();
+      },
+
+      async changePage(page) {
+        if (page >= 1 && page <= this.pagination.totalPages) {
+          this.pagination.currentPage = page;
+          await this.loadProducts();
+        }
+      },
+
+      getVisiblePages() {
+        const current = this.pagination.currentPage;
+        const total = this.pagination.totalPages;
+        const pages = [];
+
+        const start = Math.max(1, current - 2);
+        const end = Math.min(total, current + 2);
+
+        for (let i = start; i <= end; i++) {
+          pages.push(i);
+        }
+
+        return pages;
+      },
+
+      openCreateModal() {
+        this.isEditing = false;
+        this.editingId = null;
+        this.form = {
+          name: '',
+          description: '',
+          price: '',
+          sku: '',
+          thumbnailUrl: '',
+          categoryId: '',
+          isActive: true,
+          yearIds: []
+        };
+        this.carSearchQuery = '';
+        this.carSearchResults = [];
+        this.showCarDropdown = false;
+        this.updateSelectedCars();
+        this.showModal = true;
+      },
+
+      async openEditModal(product) {
+        this.isEditing = true;
+        this.editingId = product.id;
+        this.form = {
+          name: product.name,
+          description: product.description || '',
+          price: product.price,
+          sku: product.sku || '',
+          thumbnailUrl: product.thumbnailUrl || '',
+          categoryId: product.categoryId,
+          isActive: !product.disabledAt,
+          yearIds: product.years ? product.years.map(year => year.id) : []
+        };
+        
+        // Limpar busca e dropdown
+        this.carSearchQuery = '';
+        this.carSearchResults = [];
+        this.showCarDropdown = false;
+        
+        // Carregar anos completos se necessário
+        if (product.years && product.years.length > 0) {
+          // Verificar se os anos já têm os dados completos (model e brand)
+          const needsReload = product.years.some(year => !year.model || !year.model.brand);
+          if (needsReload) {
+            await this.loadYears();
+          }
+        }
+        
+        // Atualizar carros selecionados após carregar dados
+        this.updateSelectedCars();
+        this.showModal = true;
+      },
+
+      closeModal() {
+        this.showModal = false;
+        this.saving = false;
+      },
+
+      async saveProduct() {
+        this.saving = true;
+        try {
+          const url = this.isEditing
+            ? `/api/products/${this.editingId}`
+            : '/api/products';
+
+          const method = this.isEditing ? 'PATCH' : 'POST';
+
+          const response = await fetch(url, {
+            method,
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+              ...this.form,
+              isActive: this.form.isActive
+            })
+          });
+
+          if (response.ok) {
+            this.closeModal();
+            await this.loadProducts();
+            await this.loadStats();
+          } else {
+            const error = await response.json();
+            alert('Erro ao salvar produto: ' + (error.message || 'Erro desconhecido'));
+          }
+        } catch (error) {
+          console.error('Erro ao salvar produto:', error);
+          alert('Erro ao salvar produto');
+        } finally {
+          this.saving = false;
+        }
+      },
+
+      async deleteProduct(id) {
+        if (confirm('Tem certeza que deseja excluir este produto?')) {
+          try {
+            const response = await fetch(`/api/products/${id}`, {
+              method: 'DELETE',
+              headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+              }
+            });
+
+            if (response.ok) {
+              await this.loadProducts();
+              await this.loadStats();
+            } else {
+              alert('Erro ao excluir produto');
+            }
+          } catch (error) {
+            console.error('Erro ao excluir produto:', error);
+            alert('Erro ao excluir produto');
+          }
+        }
+      },
+
+      // Métodos de ordenação
+      toggleSort(field) {
+        const existingIndex = this.sortFields.findIndex(sort => sort.field === field);
+
+        if (existingIndex !== -1) {
+          // Campo já existe, alternar direção
+          const currentSort = this.sortFields[existingIndex];
+          if (currentSort.direction === 'asc') {
+            this.sortFields[existingIndex] = { field, direction: 'desc' };
+          } else if (currentSort.direction === 'desc') {
+            // Remover da ordenação
+            this.sortFields.splice(existingIndex, 1);
+          }
+        } else {
+          // Adicionar novo campo de ordenação
+          this.sortFields.push({ field, direction: 'asc' });
+        }
+
+        // Recarregar dados com nova ordenação
+        this.loadProducts();
+      },
+
+      getSortIcon(field, direction) {
+        const sortField = this.sortFields.find(sort => sort.field === field);
+        if (sortField && sortField.direction === direction) {
+          return 'text-orange-600';
+        }
+        return 'text-gray-300';
+      },
+
+      getSortPriority(field) {
+        const index = this.sortFields.findIndex(sort => sort.field === field);
+        return index + 1; // Retorna 1 para primeiro, 2 para segundo, etc. 0 se não encontrado
+      },
+
+      buildSortParam() {
+        if (this.sortFields.length === 0) return '';
+
+        return this.sortFields.map(sort => {
+          return sort.direction === 'desc' ? `-${sort.field}` : sort.field;
+        }).join(',');
+      }
+    }
+  }
+</script>
+@endslot
 @end

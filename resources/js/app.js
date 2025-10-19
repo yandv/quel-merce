@@ -60,7 +60,6 @@ document.addEventListener('alpine:init', () => {
         })
       }
       localStorage.setItem('cart', JSON.stringify(this.items))
-      console.log(this.items.map((i) => i))
     },
 
     removeItem(item) {

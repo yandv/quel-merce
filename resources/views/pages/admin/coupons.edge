@@ -7,7 +7,7 @@
         <h2 class="text-3xl font-bold text-gray-900">Cupons</h2>
         <p class="mt-1 text-sm text-gray-500">Gerencie cupons de desconto e promoções</p>
       </div>
-      <button @click="openCreateModal()"
+      <button x-show="isAdmin" x-cloak @click="openCreateModal()"
         class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors">
         <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -356,7 +356,7 @@
                   </div>
                 </button>
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+              <th x-show="isAdmin" x-cloak class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
@@ -396,9 +396,8 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   <span x-text="new Date(coupon.validUntil).toLocaleDateString('pt-BR', { hour: '2-digit', minute: '2-digit' })"></span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <button @click="openEditModal(coupon)"
-                    class="text-orange-600 hover:text-orange-900 mr-3">Editar</button>
+                <td x-show="isAdmin" x-cloak class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <button @click="openEditModal(coupon)" class="text-orange-600 hover:text-orange-900 mr-3">Editar</button>
                   <button @click="deleteCoupon(coupon.id)" class="text-red-600 hover:text-red-900">Excluir</button>
                 </td>
               </tr>
@@ -702,6 +701,7 @@
 <script>
   function couponManager() {
     return {
+      isAdmin: {{ auth.user?.role === 'ADMIN' ? 'true' : 'false' }},
       // State
       loading: true,
       coupons: [],
@@ -761,28 +761,22 @@
           if (sortParam) params.append('sort', sortParam);
 
           const response = await fetch(`/api/coupons?${params}`);
-          const data = await response.json();
+          const paginator = await response.json();
 
-          if (data.data) {
-            // O controller retorna { data: coupons, pagination: {...} }
-            this.coupons = data.data.data || [];
-            this.pagination = {
-              currentPage: data.pagination.page || 1,
-              totalPages: data.pagination.totalPages || 1,
-              total: data.pagination.total || 0,
-              from: data.pagination.page ? ((data.pagination.page - 1) * 10) + 1 : 1,
-              to: data.pagination.page ? Math.min(data.pagination.page * 10, data.pagination.total || 0) : 0
-            };
-          } else {
-            this.coupons = [];
-            this.pagination = {
-              currentPage: 1,
-              totalPages: 1,
-              total: 0,
-              from: 0,
-              to: 0
-            };
-          }
+          this.coupons = paginator?.data || [];
+          const currentPage = paginator?.meta?.currentPage || 1;
+          const perPage = paginator?.meta?.perPage || 10;
+          const total = paginator?.meta?.total || 0;
+          const from = total > 0 ? ((currentPage - 1) * perPage) + 1 : 0;
+          const to = Math.min(currentPage * perPage, total);
+          
+          this.pagination = {
+            currentPage: currentPage,
+            totalPages: paginator?.meta?.lastPage || 1,
+            total: total,
+            from: from,
+            to: to
+          };
 
         } catch (error) {
           console.error('Erro ao carregar cupons:', error);

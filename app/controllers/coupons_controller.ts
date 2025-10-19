@@ -13,8 +13,8 @@ import {
   updateCouponValidator,
 } from '#validators/coupon_validator'
 import { sortAndPaginationValidator } from '#validators/default_validators'
-import Order from '#models/order'
 import CouponNewUsageLimitEqualsOrLowerThanUsageCountException from '#exceptions/coupon/coupon_new_usage_limit_equals_or_lower_than_usage_count_exception'
+import db from '@adonisjs/lucid/services/db'
 
 export default class CouponsController {
   async getCouponByCode({ params, response }: HttpContext) {
@@ -67,42 +67,36 @@ export default class CouponsController {
 
     const coupons = await query.paginate(page, itemsPerPage)
 
-    return response.json({
-      data: coupons,
-      pagination: {
-        page,
-        itemsPerPage,
-        total: coupons.total,
-        totalPages: coupons.lastPage,
-      },
-    })
+    return response.json(coupons)
   }
 
   async getCouponSummary({ response }: HttpContext) {
-    const [
-      [totalCouponsCount],
-      [activeCouponsCount],
-      [expiringIn7DaysCouponsCount],
-      [usagesThisMonthCouponsCount],
-    ] = await Promise.all([
-      Coupon.query().count('* as total').pojo<{ total: number }>(),
-      Coupon.query().where('isActive', true).count('* as total').pojo<{ total: number }>(),
-      Coupon.query()
-        .where('validUntil', '<', DateTime.now().plus({ days: 7 }).toJSDate())
-        .count('* as total')
-        .pojo<{ total: number }>(),
-      Order.query()
-        .where('createdAt', '>=', DateTime.now().minus({ days: 30 }).toJSDate())
-        .whereNotNull('couponId')
-        .count('* as total')
-        .pojo<{ total: number }>(),
-    ])
+    const now = DateTime.now()
+    const sevenDaysLater = now.plus({ days: 7 }).toJSDate()
+    const last30Days = now.minus({ days: 30 }).toJSDate()
+
+    const [stats] = await db.from('coupons as c').select(
+      db.raw('COUNT(*)::int as total'),
+      db.raw(`SUM(CASE WHEN c.is_active = true THEN 1 ELSE 0 END)::int as active`),
+      db.raw(`SUM(CASE WHEN c.valid_until < ? THEN 1 ELSE 0 END)::int as expiring_in_7_days`, [
+        sevenDaysLater,
+      ]),
+      db.raw(
+        `(
+          SELECT COUNT(*) 
+          FROM orders o 
+          WHERE o.created_at >= ? 
+            AND o.coupon_id IS NOT NULL
+        )::int as usages_this_month`,
+        [last30Days]
+      )
+    )
 
     return response.json({
-      total: Number(totalCouponsCount?.total) || 0,
-      active: Number(activeCouponsCount?.total) || 0,
-      expiringIn7Days: Number(expiringIn7DaysCouponsCount?.total) || 0,
-      usagesThisMonth: Number(usagesThisMonthCouponsCount?.total) || 0,
+      total: stats.total || 0,
+      active: stats.active || 0,
+      expiringIn7Days: stats.expiring_in_7_days || 0,
+      usagesThisMonth: stats.usages_this_month || 0,
     })
   }
 

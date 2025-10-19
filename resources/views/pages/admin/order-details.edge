@@ -1,0 +1,387 @@
+@layout.admin()
+@slot('main')
+<div class="p-6" x-data="orderDetailsManager()" x-init="init()" x-cloak>
+  <!-- Page Header -->
+  <div class="mb-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <div class="flex items-center space-x-4 mb-2">
+          <a href="/admin/orders" class="text-orange-600 hover:text-orange-700 flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Voltar aos Pedidos
+          </a>
+        </div>
+        <h2 class="text-3xl font-bold text-gray-900">Detalhes do Pedido</h2>
+        <p class="mt-1 text-sm text-gray-500">Visualize todas as informações do pedido</p>
+      </div>
+      <div class="flex items-center space-x-3">
+        <button @click="cancelOrder()" 
+          class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+          x-show="order && order.paymentStatus !== 'CANCELLED' && order.paymentStatus !== 'CHARGED_BACK'">
+          <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          Cancelar pedido
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div x-show="loading" class="flex items-center justify-center h-64">
+    <div class="text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
+      <p class="mt-4 text-gray-500">Carregando detalhes do pedido...</p>
+    </div>
+  </div>
+
+  <!-- Order Details -->
+  <template x-if="!loading && order">
+    <div class="space-y-6">
+      <!-- Order Header -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900">Pedido #<span x-text="order.id"></span></h3>
+            <p class="text-sm text-gray-500">Criado em <span x-text="new Date(order.createdAt).toLocaleDateString('pt-BR', { 
+              day: '2-digit', 
+              month: '2-digit', 
+              year: 'numeric', 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            })"></span></p>
+          </div>
+          <div class="text-right">
+            <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full"
+              :class="getStatusClass(order.paymentStatus)"
+              x-text="getStatusText(order.paymentStatus)">
+            </span>
+            <p class="text-2xl font-bold text-gray-900 mt-2">
+              R$ <span x-text="parseFloat(order.total).toFixed(2).replace('.', ',')"></span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Customer Information -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <svg class="w-5 h-5 mr-2 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+          Informações do Cliente
+        </h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+            <p class="text-gray-900" x-text="order.user?.fullName || 'N/A'"></p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <p class="text-gray-900" x-text="order.user?.email || 'N/A'"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Items -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <svg class="w-5 h-5 mr-2 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+          </svg>
+          Itens do Pedido
+        </h4>
+        <div class="space-y-4">
+          <template x-for="item in order.items" :key="item.id">
+            <div class="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
+              <div class="flex-shrink-0 h-16 w-16">
+                <img x-show="item.product?.thumbnailUrl" :src="item.product?.thumbnailUrl" 
+                  :alt="item.product?.name" class="h-16 w-16 rounded-lg object-cover">
+                <div x-show="!item.product?.thumbnailUrl" 
+                  class="h-16 w-16 rounded-lg bg-gray-200 flex items-center justify-center">
+                  <svg class="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h5 class="text-sm font-medium text-gray-900 truncate" x-text="item.product?.name || 'Produto não encontrado'"></h5>
+                <p class="text-sm text-gray-500">Quantidade: <span x-text="item.quantity"></span></p>
+                <p class="text-sm text-gray-500">Preço unitário: R$ <span x-text="parseFloat(item.price).toFixed(2).replace('.', ',')"></span></p>
+              </div>
+              <div class="text-right">
+                <p class="text-sm font-medium text-gray-900">
+                  R$ <span x-text="(parseFloat(item.price) * item.quantity).toFixed(2).replace('.', ',')"></span>
+                </p>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <!-- Order Summary -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <svg class="w-5 h-5 mr-2 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          </svg>
+          Resumo do Pedido
+        </h4>
+        <div class="space-y-3">
+          <div class="flex justify-between">
+            <span class="text-gray-600">Subtotal:</span>
+            <span class="text-gray-900">R$ <span x-text="calculateSubtotal().toFixed(2).replace('.', ',')"></span></span>
+          </div>
+          <div x-show="order.discount > 0" class="flex justify-between text-green-600">
+            <span>Desconto:</span>
+            <span>- R$ <span x-text="parseFloat(order.discount).toFixed(2).replace('.', ',')"></span></span>
+          </div>
+          <div x-show="order.coupon" class="flex justify-between text-blue-600">
+            <span>Cupom usado:</span>
+            <span x-text="order.coupon?.code"></span>
+          </div>
+          <div class="border-t pt-3">
+            <div class="flex justify-between text-lg font-semibold">
+              <span>Total:</span>
+              <span class="text-orange-600">R$ <span x-text="parseFloat(order.total).toFixed(2).replace('.', ',')"></span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment Information -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <svg class="w-5 h-5 mr-2 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+          </svg>
+          Informações de Pagamento
+        </h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Método de Pagamento</label>
+            <p class="text-gray-900" x-text="getPaymentMethodText(order.paymentMethod)"></p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Status do Pagamento</label>
+            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+              :class="getStatusClass(order.paymentStatus)"
+              x-text="getStatusText(order.paymentStatus)">
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- Error State -->
+  <div x-show="!loading && !order" class="text-center py-12">
+    <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 16.5c-.77.833.192 2.5 1.732 2.5z" />
+    </svg>
+    <h3 class="text-lg font-medium text-gray-900 mb-2">Pedido não encontrado</h3>
+    <p class="text-gray-500">O pedido solicitado não foi encontrado ou você não tem permissão para visualizá-lo.</p>
+  </div>
+
+  <!-- Cancel Order Modal -->
+  <div x-show="showCancelModal" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
+    x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
+    x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 z-50 overflow-y-auto"
+    x-cloak>
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+      <!-- Background overlay -->
+      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeCancelModal()"></div>
+
+      <!-- Modal panel -->
+      <div
+        class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+          <div class="sm:flex sm:items-start">
+            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+              <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+              <h3 class="text-lg leading-6 font-medium text-gray-900">
+                Cancelar Pedido
+              </h3>
+              <div class="mt-2">
+                <p class="text-sm text-gray-500">
+                  Tem certeza que deseja cancelar este pedido? Esta ação não pode ser desfeita.
+                </p>
+              </div>
+              
+              <!-- Aviso para pedidos pagos -->
+              <div x-show="order && order.paymentStatus === 'PAID'" class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div class="flex">
+                  <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                  </div>
+                  <div class="ml-3">
+                    <h3 class="text-sm font-medium text-red-800">
+                      ATENÇÃO: Pedido Pago
+                    </h3>
+                    <div class="mt-2 text-sm text-red-700">
+                      <p class="font-semibold">Este pedido já foi pago e será estornado.</p>
+                      <ul class="mt-2 list-disc list-inside space-y-1">
+                        <li>O valor será devolvido ao cliente</li>
+                        <li>Se o produto já foi enviado, pode haver problemas logísticos</li>
+                        <li>Esta ação pode gerar custos adicionais</li>
+                        <li>Verifique se o cancelamento é realmente necessário</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-4">
+                <label for="cancelReason" class="block text-sm font-medium text-gray-700">
+                  Motivo do cancelamento <span class="text-red-500">*</span>
+                </label>
+                <textarea id="cancelReason" x-model="cancelReason" rows="3"
+                  placeholder="Descreva o motivo do cancelamento..."
+                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors duration-200 resize-vertical"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+          <button type="button" @click="confirmCancelOrder()" :disabled="cancelling"
+            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50">
+            <span x-show="!cancelling" x-text="order && order.paymentStatus === 'PAID' ? 'Estornar Pedido' : 'Cancelar Pedido'"></span>
+            <span x-show="cancelling">Processando...</span>
+          </button>
+          <button type="button" @click="closeCancelModal()" :disabled="cancelling"
+            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50">
+            Voltar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function orderDetailsManager() {
+    return {
+      loading: true,
+      order: null,
+      orderId: null,
+      showCancelModal: false,
+      cancelReason: '',
+      cancelling: false,
+
+      async init() {
+        // Obter ID do pedido da URL
+        const pathParts = window.location.pathname.split('/');
+        this.orderId = pathParts[pathParts.length - 1];
+        
+        await this.loadOrder();
+      },
+
+      async loadOrder() {
+        try {
+          const response = await fetch(`/api/orders/${this.orderId}?includes=user,items,coupon`);
+          if (response.ok) {
+            this.order = await response.json();
+          } else {
+            console.error('Erro ao carregar pedido:', response.status);
+          }
+        } catch (error) {
+          console.error('Erro ao carregar pedido:', error);
+        } finally {
+          this.loading = false;
+        }
+      },
+
+      calculateSubtotal() {
+        if (!this.order?.items) return 0;
+        return this.order.items.reduce((total, item) => {
+          return total + (parseFloat(item.price) * item.quantity);
+        }, 0);
+      },
+
+      getStatusClass(status) {
+        const classes = {
+          'PENDING': 'bg-yellow-100 text-yellow-800',
+          'PAID': 'bg-green-100 text-green-800',
+          'CANCELLED': 'bg-red-100 text-red-800',
+          'CHARGED_BACK': 'bg-gray-100 text-gray-800'
+        };
+        return classes[status] || 'bg-gray-100 text-gray-800';
+      },
+
+      getStatusText(status) {
+        const texts = {
+          'PENDING': 'Pendente',
+          'PAID': 'Pago',
+          'CANCELLED': 'Cancelado',
+          'CHARGED_BACK': 'Estornado'
+        };
+        return texts[status] || status;
+      },
+
+      getPaymentMethodText(method) {
+        const methods = {
+          'PIX': 'PIX',
+          'CREDIT_CARD': 'Cartão de Crédito',
+          'BOLETO': 'Boleto'
+        };
+        return methods[method] || method;
+      },
+
+
+      cancelOrder() {
+        this.showCancelModal = true;
+      },
+
+      async confirmCancelOrder() {
+        if (!this.cancelReason.trim()) {
+          alert('Por favor, informe o motivo do cancelamento');
+          return;
+        }
+
+        this.cancelling = true;
+        try {
+          const response = await fetch(`/api/orders/${this.orderId}/cancel`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+              reason: this.cancelReason
+            })
+          });
+
+          if (response.ok) {
+            this.showCancelModal = false;
+            this.cancelReason = '';
+            await this.loadOrder();
+          } else {
+            const error = await response.json();
+            alert('Erro ao cancelar pedido: ' + (error.error || 'Erro desconhecido'));
+          }
+        } catch (error) {
+          console.error('Erro ao cancelar pedido:', error);
+          alert('Erro ao cancelar pedido');
+        } finally {
+          this.cancelling = false;
+        }
+      },
+
+      closeCancelModal() {
+        this.showCancelModal = false;
+        this.cancelReason = '';
+        this.cancelling = false;
+      }
+    }
+  }
+</script>
+@endslot
+@end

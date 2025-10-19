@@ -210,7 +210,7 @@
                 <div class="space-y-3">
                   <template x-for="item in order.items" :key="item.id">
                     <div class="flex justify-between items-center">
-                      <a x-bind:href="`/products/${item.product.id}`" class="flex items-center space-x-3">
+                      <a x-bind:href="`/products/${item.product.slug}`" class="flex items-center space-x-3">
                         <img
                           x-bind:src="item.product.thumbnailUrl || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aT0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0zMiAzNkMyOC42ODYzIDM2IDI2IDMzLjMxMzcgMjYgMzBDMjYgMjYuNjg2MyAyOC42ODYzIDI0IDMyIDI0QzM1LjMxMzcgMjQgMzggMjYuNjg2MyAzOCAzMEMzOCAzMy4zMTM3IDM1LjMxMzcgMzYgMzIgMzZaIiBmaWxsPSIjOUI5QkEwIi8+CjxwYXRoIGQ9Ik0yMCA0OEg0NEM0Ni4yMDkxIDQ4IDQ4IDQ2LjIwOTEgNDggNDRWMjBDNDggMTcuNzkwOSA0Ni4yMDkxIDE2IDQ0IDE2SDIwQzE3Ljc5MDkgMTYgMTYgMTcuNzkwOSAxNiAyMFY0NEMxNiA0Ni4yMDkxIDE3Ljc5MDkgNDggMjAgNDhaIiBzdHJva2U9IiM5QjlCQTAiIHN0cm9rZS13aWR0aD0iMiIvPgo8L3N2Zz4K'"
                           x-bind:alt="item.product.name"
@@ -283,7 +283,6 @@
                 throw new Error(errorData.message || "Erro ao carregar pedido");
               }
               this.order = await response.json();
-              console.log("Order data:", this.order); // Debug log
             } catch (error) {
               console.error("Erro:", error);
               this.error = error.message;

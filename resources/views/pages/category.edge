@@ -1,0 +1,360 @@
+@layout.app()
+  @slot('main')
+    <div x-data="CategoryPage()" x-init="loadCategory()" class="min-h-screen bg-gray-50">
+      <!-- Header -->
+      @!component('components/header', { showSearch: true })
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Loading State -->
+        <div x-show="isLoading" class="text-center py-12">
+          <div class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-orange-500">
+            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-orange-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Carregando categoria...
+          </div>
+        </div>
+
+        <!-- Category Content -->
+        <div x-show="!isLoading && category" class="space-y-8">
+          <!-- Breadcrumb -->
+          <nav class="text-sm text-gray-500">
+            <ol class="flex items-center space-x-2">
+              <li>
+                <a href="/" class="hover:text-orange-600">Home</a>
+              </li>
+              
+              <!-- Renderiza as categorias dinamicamente -->
+              <template x-for="cat in breadcrumb" :key="cat.slug">
+                <li class="flex items-center">
+                  <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
+                  <a :href="`/category/${cat.slug}`" 
+                     class="hover:text-orange-600"
+                     x-text="cat.name"></a>
+                </li>
+              </template>
+            </ol>
+          </nav>
+
+          <!-- Category Header -->
+          <div class="bg-white rounded-lg shadow-sm border p-6">
+            <div class="text-center">
+              <h1 class="text-3xl font-bold text-gray-900 mb-4" x-text="category.name"></h1>
+              <p class="text-lg text-gray-600 mb-6" x-show="category.description" x-text="category.description"></p>
+              <div class="text-sm text-gray-500">
+                <span x-text="`${products.length} produto(s) encontrado(s)`"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filters -->
+          <div class="bg-white rounded-lg shadow-sm border p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Filtros</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <!-- Search by Product Name -->
+              <div>
+                <label for="productName" class="block text-sm font-medium text-gray-700 mb-2">Nome do Produto</label>
+                <input 
+                  type="text" 
+                  id="productName"
+                  x-model="filters.name"
+                  @input="applyFilters()"
+                  placeholder="Digite o nome do produto..."
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                />
+              </div>
+
+              <!-- Search by Brand -->
+              <div>
+                <label for="brandName" class="block text-sm font-medium text-gray-700 mb-2">Marca</label>
+                <input 
+                  type="text" 
+                  id="brandName"
+                  x-model="filters.brandName"
+                  @input="applyFilters()"
+                  placeholder="Digite a marca..."
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                />
+              </div>
+
+              <!-- Search by Model -->
+              <div>
+                <label for="modelName" class="block text-sm font-medium text-gray-700 mb-2">Modelo</label>
+                <input 
+                  type="text" 
+                  id="modelName"
+                  x-model="filters.modelName"
+                  @input="applyFilters()"
+                  placeholder="Digite o modelo..."
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                />
+              </div>
+
+              <!-- Search by Year -->
+              <div>
+                <label for="yearName" class="block text-sm font-medium text-gray-700 mb-2">Ano</label>
+                <input 
+                  type="text" 
+                  id="yearName"
+                  x-model="filters.yearName"
+                  @input="applyFilters()"
+                  placeholder="Digite o ano..."
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            <!-- Clear Filters Button -->
+            <div class="mt-4 flex justify-end">
+              <button 
+                @click="clearFilters()"
+                class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+              >
+                Limpar Filtros
+              </button>
+            </div>
+          </div>
+
+          <!-- Products Grid -->
+          <div class="bg-white rounded-lg shadow-sm border p-6">
+            <!-- Loading Products -->
+            <div x-show="isLoadingProducts" class="text-center py-8">
+              <div class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-orange-500">
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-orange-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Carregando produtos...
+              </div>
+            </div>
+
+            <!-- Products List -->
+            <div x-show="!isLoadingProducts">
+              <!-- No Products Message -->
+              <div x-show="products.length === 0" class="text-center py-12">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">Nenhum produto encontrado</h3>
+                <p class="mt-1 text-sm text-gray-500">Tente ajustar os filtros de busca.</p>
+              </div>
+
+              <!-- Products Grid -->
+              <div x-show="products.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <template x-for="product in products" :key="product.id">
+                  <div class="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow flex flex-col h-96">
+                    <!-- Product Image -->
+                    <div class="w-full h-48 overflow-hidden rounded-t-lg flex-shrink-0">
+                      <img 
+                        :src="product.thumbnailUrl || '/default-product.png'" 
+                        :alt="product.name"
+                        class="w-full h-full object-cover object-center"
+                      />
+                    </div>
+                    
+                    <!-- Product Info -->
+                    <div class="p-4 flex flex-col flex-1 min-h-0">
+                      <h3 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2" x-text="product.name"></h3>
+                      <p class="text-sm text-gray-600 mb-3 line-clamp-2 flex-1" x-text="product.description || 'Descrição não disponível'"></p>
+                      
+                      <!-- Price -->
+                      <div class="flex items-baseline justify-between mb-2">
+                        <span class="text-xl font-bold text-orange-600" x-text="formatPrice(product.price)"></span>
+                        <span class="text-sm text-gray-500">à vista</span>
+                      </div>
+
+                      <!-- Compatible Vehicles Count -->
+                      <div class="text-xs text-gray-500 mb-3">
+                        <span x-text="`${product.years?.length || 0} veículo(s) compatível(is)`"></span>
+                      </div>
+
+                      <!-- Action Buttons -->
+                      <div class="mt-auto space-y-2">
+                        <!-- View Details Link -->
+                        <a 
+                          :href="`/products/${product.slug}`"
+                          class="inline-block text-center w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 text-sm"
+                        >
+                          Ver detalhes
+                        </a>
+                        
+                        <!-- Add to Cart Button -->
+                        <button 
+                          @click="addToCart(product)"
+                          class="w-full bg-orange-500 text-white py-2 rounded-lg hover:bg-orange-600 text-sm"
+                        >
+                          Adicionar ao carrinho
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Error State -->
+        <div x-show="!isLoading && !category && error" class="text-center py-12">
+          <div class="max-w-md mx-auto">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.47-.881-6.08-2.33"></path>
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">Erro ao carregar categoria</h3>
+            <p class="mt-1 text-sm text-gray-500" x-text="error"></p>
+            <div class="mt-6">
+              <a href="/" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700">
+                Voltar para Home
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function CategoryPage() {
+        return {
+          category: null,
+          products: [],
+          filters: {
+            name: '',
+            brandName: '',
+            modelName: '',
+            yearName: ''
+          },
+          isLoading: true,
+          isLoadingProducts: false,
+          error: null,
+          filterTimeout: null,
+          // Busca global
+          search: '',
+          debounceTimer: null,
+
+          async loadCategory() {
+            try {
+              const categorySlug = this.getCategorySlug();
+              
+              // Carregar informações da categoria
+              const categoryResponse = await fetch(`/api/categories/${categorySlug}`);
+              if (categoryResponse.ok) {
+                this.category = await categoryResponse.json();
+              } else {
+                this.error = 'Categoria não encontrada';
+                return;
+              }
+
+              // Carregar produtos da categoria
+              await this.loadProducts();
+            } catch (error) {
+              console.error('Erro ao carregar categoria:', error);
+              this.error = 'Erro ao carregar categoria';
+            } finally {
+              this.isLoading = false;
+            }
+          },
+
+          async loadProducts() {
+            this.isLoadingProducts = true;
+            try {
+              const categorySlug = this.getCategorySlug();
+              const queryParams = new URLSearchParams();
+              
+              // Busca global tem prioridade sobre filtros específicos
+              if (this.search) {
+                queryParams.append('name', this.search);
+              } else {
+                if (this.filters.name) queryParams.append('name', this.filters.name);
+                if (this.filters.brandName) queryParams.append('brandName', this.filters.brandName);
+                if (this.filters.modelName) queryParams.append('modelName', this.filters.modelName);
+                if (this.filters.yearName) queryParams.append('yearName', this.filters.yearName);
+              }
+
+              const response = await fetch(`/api/categories/${categorySlug}/products?${queryParams.toString()}`);
+              
+              if (response.ok) {
+                this.products = await response.json();
+              }
+            } catch (error) {
+              console.error('Erro ao carregar produtos:', error);
+            } finally {
+              this.isLoadingProducts = false;
+            }
+          },
+
+          applyFilters() {
+            // Debounce para evitar muitas requisições
+            clearTimeout(this.filterTimeout);
+            this.filterTimeout = setTimeout(() => {
+              this.loadProducts();
+            }, 500);
+          },
+
+          clearFilters() {
+            this.filters = {
+              name: '',
+              brandName: '',
+              modelName: '',
+              yearName: ''
+            };
+            this.loadProducts();
+          },
+
+          addToCart(product) {
+            window.Alpine.store('cart').addItem({
+              id: product.id,
+              name: product.name,
+              price: product.price,
+              thumbnailUrl: product.thumbnailUrl
+            }, 1);
+            
+            window.Alpine.store('toast').toast(
+              `${product.name} adicionado ao carrinho!`, 
+              'success', 
+              3000
+            );
+          },
+
+          getCategorySlug() {
+            const pathParts = window.location.pathname.split('/');
+            return pathParts[pathParts.length - 1];
+          },
+
+
+          formatPrice(price) {
+            if (!price) return '0,00';
+            return parseFloat(price).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+          },
+
+          get breadcrumb() {
+            if (!this.category) return [];
+            const trail = [];
+            let current = this.category;
+            while (current) {
+              trail.unshift(current);
+              current = current.parent;
+            }
+            return trail;
+          },
+
+          // Métodos de busca global
+          onSearchInput(event) {
+            clearTimeout(this.debounceTimer);
+            this.search = event.target.value;
+            this.debounceTimer = setTimeout(() => {
+              this.loadProducts();
+            }, 500);
+          },
+
+          onSearchEnter() {
+            clearTimeout(this.debounceTimer);
+            this.loadProducts();
+          }
+        };
+      }
+    </script>
+  @endslot
+@end

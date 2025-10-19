@@ -19,7 +19,7 @@
       <div class="mt-4 sm:mx-auto sm:w-full sm:max-w-md">
         <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <!-- Ícone de email -->
-          <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-orange-100 mb-6">
+          <div x-show="!isEmailAlreadyVerified" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-orange-100 mb-6">
             <svg class="h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 stroke-linecap="round"
@@ -31,12 +31,27 @@
           </div>
 
           <!-- Mensagem principal -->
-          <div class="text-center mb-6">
+          <div x-show="!isEmailAlreadyVerified" class="text-center mb-6">
             <h3 class="text-lg font-medium text-gray-900 mb-2">
               Email de verificação enviado!
             </h3>
             <p class="text-sm text-gray-600">
               Enviamos um link de verificação para o seu email. Clique no link para ativar sua conta.
+            </p>
+          </div>
+
+          <!-- Mensagem para email já verificado -->
+          <div x-show="isEmailAlreadyVerified" class="text-center mb-6">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+              <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">
+              Email já verificado!
+            </h3>
+            <p class="text-sm text-gray-600">
+              Seu email já foi verificado com sucesso. Você pode fazer login normalmente.
             </p>
           </div>
 
@@ -56,21 +71,23 @@
           <div class="space-y-4">
             <button
               @click="resendEmail"
+              x-show="!isEmailAlreadyVerified"
               :disabled="isResendDisabled || isLoading"
               class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span x-show="!isLoading && !isResendDisabled">Reenviar email</span>
+              <span x-show="!isLoading && !isResendDisabled">Email já verificado</span>
               <span x-show="isLoading">Enviando...</span>
               <span x-show="isResendDisabled" x-text="`Reenviar em ${formatTime(resendCountdown)}`"></span>
             </button>
 
             <!-- Cronômetro visual -->
-            <div x-show="isResendDisabled" class="text-center">
+            <div x-show="isResendDisabled && !isEmailAlreadyVerified" class="text-center">
               <div class="w-full bg-gray-200 rounded-full h-2">
-                              <div
-                class="bg-orange-600 h-2 rounded-full transition-all duration-1000 ease-linear"
-                :style="`width: ${lastResendCountdown > 0 ? (resendCountdown / lastResendCountdown) * 100 : 0}%`"
-              >
+                <div
+                  class="bg-orange-600 h-2 rounded-full transition-all duration-1000 ease-linear"
+                  :style="`width: ${lastResendCountdown > 0 ? (resendCountdown / lastResendCountdown) * 100 : 0}%`"
+                >
                 </div>
               </div>
               <p class="text-xs text-gray-500 mt-2">
@@ -81,22 +98,48 @@
 
           <!-- Links úteis -->
           <div class="mt-6 text-center">
-            <p class="text-sm text-gray-600">
+            <p x-show="!isEmailAlreadyVerified" class="text-sm text-gray-600">
               Não recebeu o email? Verifique sua pasta de spam ou
               <a href="#" class="font-medium text-orange-600 hover:text-orange-500">
                 entre em contato conosco
               </a>
             </p>
+            <p x-show="isEmailAlreadyVerified" class="text-sm text-gray-600">
+              Pronto! Agora você pode
+              <a href="/login" class="font-medium text-orange-600 hover:text-orange-500">
+                fazer login
+              </a>
+              com sua conta.
+            </p>
           </div>
 
-          <!-- Botão de voltar -->
-          <div class="mt-6">
-            <a
-              href="/"
-              class="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-            >
-              Voltar para o início
-            </a>
+          <!-- Botões de ação -->
+          <div class="mt-6 space-y-3">
+            <!-- Quando email já verificado, mostrar ambos os botões -->
+            <div x-show="isEmailAlreadyVerified" class="space-y-3">
+              <a
+                href="/login"
+                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+              >
+                Fazer login
+              </a>
+              <a
+                href="/"
+                class="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+              >
+                Voltar para o início
+              </a>
+            </div>
+            
+            <!-- Quando email não verificado, mostrar apenas voltar -->
+            <div x-show="!isEmailAlreadyVerified">
+              <a
+                href="/"
+                class="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+              >
+                Voltar para o início
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -111,6 +154,7 @@
           isResendDisabled: false,
           lastResendCountdown: 0,
           resendCountdown: 0,
+          isEmailAlreadyVerified: false,
           // 5 minutos em segundos
           countdownInterval: null,
           async init() {
@@ -153,6 +197,14 @@
           showSuccess(message) {
             this.successMessage = message;
             this.errorMessage = "";
+          },
+          showEmailAlreadyVerifiedMessage() {
+            this.isEmailAlreadyVerified = true;
+            this.successMessage = "Seu email já foi verificado! Você pode fazer login normalmente.";
+            this.errorMessage = "";
+            // Desabilitar o botão de reenvio
+            this.isResendDisabled = true;
+            this.resendCountdown = 0;
           },
           formatTime(seconds) {
             if (seconds <= 0) return "0:00";
@@ -205,6 +257,14 @@
                 } else {
                   // Iniciar countdown
                   this.startCountdown(data.resendCountdown, data.lastResendCountdown);
+                }
+              } else if (response.status === 400) {
+                // Email já verificado
+                const errorData = await response.json();
+                if (errorData.code === 'USER_EMAIL_ALREADY_VERIFIED') {
+                  this.showEmailAlreadyVerifiedMessage();
+                } else {
+                  this.showError(errorData.message || "Erro ao verificar status.");
                 }
               }
             } catch (error) {

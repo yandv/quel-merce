@@ -6,10 +6,11 @@ export default class extends BaseSchema {
   async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.uuid('id').primary().defaultTo(this.raw('gen_random_uuid()'))
-      table.integer('year').notNullable().unique()
+      table.integer('year').notNullable()
       table.uuid('model_id').references('id').inTable('models').onDelete('CASCADE')
 
       table.timestamp('created_at').notNullable().defaultTo(this.raw('CURRENT_TIMESTAMP'))
+      table.unique(['year', 'model_id'])
     })
   }
 

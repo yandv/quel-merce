@@ -1,7 +1,8 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, belongsTo, hasMany } from '@adonisjs/lucid/orm'
+import { BaseModel, column, belongsTo, hasMany, beforeSave } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import Product from '#models/product'
+import SlugService from '#services/slug_service'
 
 export default class Category extends BaseModel {
   @column({ isPrimary: true })
@@ -9,6 +10,9 @@ export default class Category extends BaseModel {
 
   @column()
   declare name: string
+
+  @column()
+  declare slug: string
 
   @column()
   declare description: string | null
@@ -39,4 +43,11 @@ export default class Category extends BaseModel {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
+
+  @beforeSave()
+  static async generateSlug(category: Category) {
+    if (category.$dirty.name && !category.$dirty.slug) {
+      category.slug = await SlugService.generateUniqueSlug(category.name, Category, category.id)
+    }
+  }
 }

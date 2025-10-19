@@ -1,4 +1,5 @@
 import vine from '@vinejs/vine'
+import { UserRole } from '#models/user'
 
 export const loginValidator = vine.compile(
   vine.object({
@@ -62,5 +63,13 @@ export const codeValidator = vine.compile(
 export const emailValidator = vine.compile(
   vine.object({
     email: vine.string().email().trim(),
+  })
+)
+
+export const userQueryValidator = vine.compile(
+  vine.object({
+    search: vine.string().trim().minLength(1).maxLength(255).optional(),
+    role: vine.enum(Object.values(UserRole)).optional(),
+    emailVerified: vine.enum(['true', 'false']).optional(),
   })
 )
