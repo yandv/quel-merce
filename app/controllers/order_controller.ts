@@ -5,10 +5,14 @@ import {
   orderQueryValidator,
   cancelOrderValidator,
 } from '#validators/order_validator'
+import vine from '@vinejs/vine'
 import Order, { OrderPaymentStatus, PaymentMethod } from '#models/order'
 import Product from '#models/product'
 import PaymentMethodNotSupportedException from '#exceptions/payment/payment_method_not_supported_exception'
 import OrderNotFoundException from '#exceptions/order/order_not_found_exception'
+import OrderAlreadyCancelledException from '#exceptions/order/order_already_cancelled_exception'
+import OrderCannotBeModifiedException from '#exceptions/order/order_cannot_be_modified_exception'
+import AccessDeniedException from '#exceptions/auth/access_denied_exception'
 import Coupon, { CouponDiscountType } from '#models/coupon'
 import CouponNotFoundException from '#exceptions/coupon/coupon_not_found_exception'
 import CouponInactiveException from '#exceptions/coupon/coupon_inactive_exception'
@@ -19,11 +23,15 @@ import db from '@adonisjs/lucid/services/db'
 import { sortAndPaginationValidator, includesValidator } from '#validators/default_validators'
 import { UserRole } from '#models/user'
 import { EmailService } from '#services/email_service'
+import { PaymentManagerService } from '#services/payment_manager_service'
 import { inject } from '@adonisjs/core'
 
 @inject()
 export default class OrderController {
-  constructor(private emailService: EmailService) {}
+  constructor(
+    private emailService: EmailService,
+    private paymentManagerService: PaymentManagerService
+  ) {}
   /**
    * GET /api/orders
    * Lista pedidos com paginação, filtros e ordenação
@@ -31,7 +39,7 @@ export default class OrderController {
   async getOrders({ request, response }: HttpContext) {
     const { search, paymentStatus, paymentMethod, dateFrom, dateTo } =
       await orderQueryValidator.validate(request.all())
-    const { includes } = await includesValidator.validate(request.all())
+    const { includes = [] } = await includesValidator.validate(request.all())
     const {
       sort,
       page = 1,
@@ -60,7 +68,6 @@ export default class OrderController {
       })
     }
 
-    // Filtro por busca (busca em ID do pedido, nome do usuário, email)
     if (search) {
       query.where((searchQuery) => {
         searchQuery.where('id', 'like', `%${search}%`).orWhereHas('user', (userQuery) => {
@@ -71,17 +78,14 @@ export default class OrderController {
       })
     }
 
-    // Filtro por status de pagamento
     if (paymentStatus) {
       query.where('paymentStatus', paymentStatus)
     }
 
-    // Filtro por método de pagamento
     if (paymentMethod) {
       query.where('paymentMethod', paymentMethod)
     }
 
-    // Filtro por data
     if (dateFrom) {
       query.where('createdAt', '>=', DateTime.fromISO(dateFrom).toSQL()!)
     }
@@ -90,7 +94,6 @@ export default class OrderController {
       query.where('createdAt', '<=', DateTime.fromISO(dateTo).toSQL()!)
     }
 
-    // Ordenação
     if (sort) {
       query.orderBy(sort.map((item) => ({ column: item.field, order: item.order })))
     } else {
@@ -105,7 +108,9 @@ export default class OrderController {
   async createOrder({ request, response, auth }: HttpContext) {
     const { items, paymentMethod, couponId } = await request.validateUsing(createOrderValidator)
 
-    if (paymentMethod !== PaymentMethod.PIX) {
+    const supportedMethods = [PaymentMethod.PIX, PaymentMethod.MERCADO_PAGO, PaymentMethod.STRIPE]
+
+    if (!supportedMethods.includes(paymentMethod)) {
       throw new PaymentMethodNotSupportedException(paymentMethod)
     }
 
@@ -207,26 +212,69 @@ export default class OrderController {
       return createdOrder
     })
 
-    // Carregar relacionamentos necessários para o email
     await order.load('user')
     await order.load('items', (itemsQuery) => {
       itemsQuery.preload('product')
     })
 
-    // Enviar email de confirmação
-    try {
-      await this.emailService.sendOrderConfirmationEmail(auth.user!, order)
-    } catch (error) {
-      console.error('Erro ao enviar email de confirmação:', error)
-      // Não falha a criação do pedido se o email falhar
+    if (order.paymentStatus === OrderPaymentStatus.PENDING) {
+      try {
+        await this.paymentManagerService.createPaymentForOrder(order)
+      } catch (error) {
+        console.error('Erro ao gerar pagamento:', error)
+      }
     }
+
+    await order.load('payment')
+
+    await this.emailService.sendOrderConfirmationEmail(auth.user!, order)
 
     return response.status(201).json(order)
   }
 
+  /**
+   * PATCH /api/orders/:id/cancel (Admin)
+   * Cancela um pedido com motivo
+   */
+  async cancelOrder({ params, request, response }: HttpContext) {
+    const { id } = await orderIdValidator.validate(params)
+    const { reason } = await request.validateUsing(cancelOrderValidator)
+
+    const order = await Order.find(id)
+    if (!order) {
+      throw new OrderNotFoundException(id)
+    }
+
+    if (order.paymentStatus === OrderPaymentStatus.CANCELLED) {
+      throw new OrderAlreadyCancelledException()
+    }
+
+    const originalStatus = order.paymentStatus
+    const wasPaid = originalStatus === OrderPaymentStatus.PAID
+
+    if (originalStatus === OrderPaymentStatus.PAID) {
+      order.paymentStatus = OrderPaymentStatus.CHARGED_BACK
+    } else {
+      order.paymentStatus = OrderPaymentStatus.CANCELLED
+    }
+    await order.save()
+
+    await order.load('user')
+    await order.load('items', (itemsQuery) => {
+      itemsQuery.preload('product')
+    })
+
+    await this.emailService.sendOrderCancellationEmail(order.user, order, reason, wasPaid)
+
+    return response.json({
+      message: 'Pedido cancelado com sucesso',
+      order: order,
+    })
+  }
+
   async getOrderById({ params, request, response, auth }: HttpContext) {
     const { id } = await orderIdValidator.validate(params)
-    const { includes } = await includesValidator.validate(request.all())
+    const { includes = [] } = await includesValidator.validate(request.all())
 
     const query = Order.query().where('id', id)
 
@@ -242,6 +290,10 @@ export default class OrderController {
 
     if (includes.includes('user')) {
       query.preload('user')
+    }
+
+    if (includes.includes('payment')) {
+      query.preload('payment')
     }
 
     if (auth.user?.role !== UserRole.CUSTOMER) {
@@ -284,12 +336,64 @@ export default class OrderController {
   }
 
   /**
+   * PATCH /api/orders/:id/payment-method
+   * Altera o método de pagamento de um pedido
+   */
+  async updatePaymentMethod({ params, request, response, auth }: HttpContext) {
+    const { id } = await orderIdValidator.validate(params)
+    const { paymentMethod } = await request.validateUsing(
+      vine.compile(
+        vine.object({
+          paymentMethod: vine.enum(PaymentMethod),
+        })
+      )
+    )
+
+    const order = await Order.find(id)
+    if (!order) {
+      throw new OrderNotFoundException(id)
+    }
+
+    if (auth.user?.role !== UserRole.CUSTOMER && order.userId !== auth.user?.id) {
+      throw new AccessDeniedException()
+    }
+
+    if (order.paymentStatus !== OrderPaymentStatus.PENDING) {
+      throw new OrderCannotBeModifiedException()
+    }
+
+    order.paymentMethod = paymentMethod
+    await order.save()
+
+    const existingPayment = await order.related('payment').query().first()
+
+    if (existingPayment) {
+      try {
+        await this.paymentManagerService.cancelPayment(existingPayment.id)
+      } catch (error) {
+        console.error('Erro ao cancelar pagamento existente:', error)
+      }
+    }
+
+    try {
+      await this.paymentManagerService.createPaymentForOrder(order)
+      await order.load('payment')
+    } catch (error) {
+      console.error('Erro ao criar novo pagamento:', error)
+    }
+
+    return response.json({
+      message: 'Método de pagamento alterado com sucesso',
+      order: order,
+    })
+  }
+
+  /**
    * GET /api/orders/sales-last-7-days
    */
   async getSalesLast7Days({ response }: HttpContext) {
     const sevenDaysAgo = DateTime.now().minus({ days: 7 })
 
-    // Vendas por dia dos últimos 7 dias
     const salesByDay = await db
       .from('orders')
       .select(
@@ -316,7 +420,6 @@ export default class OrderController {
       .groupByRaw("DATE(created_at AT TIME ZONE 'America/Sao_Paulo')")
       .orderByRaw("DATE(created_at AT TIME ZONE 'America/Sao_Paulo') asc")
 
-    // Estatísticas gerais dos últimos 7 dias
     const [stats] = await db
       .from('orders')
       .select(
@@ -328,7 +431,6 @@ export default class OrderController {
       .where('created_at', '>=', sevenDaysAgo.toSQL())
       .where('payment_status', 'PAID')
 
-    // Comparação com período anterior (7 dias antes dos últimos 7)
     const fourteenDaysAgo = DateTime.now().minus({ days: 14 })
     const [previousStats] = await db
       .from('orders')
@@ -337,7 +439,6 @@ export default class OrderController {
       .where('created_at', '<', sevenDaysAgo.toSQL())
       .where('payment_status', 'PAID')
 
-    // Calcular variações percentuais
     const currentOrders = stats.total_orders || 0
     const previousOrders = previousStats.total_orders || 0
     const currentSales = stats.total_sales || 0
@@ -359,54 +460,6 @@ export default class OrderController {
         ordersGrowth: Math.round(ordersGrowth * 100) / 100,
         salesGrowth: Math.round(salesGrowth * 100) / 100,
       },
-    })
-  }
-
-  /**
-   * PATCH /api/orders/:id/cancel (Admin)
-   * Cancela um pedido com motivo
-   */
-  async cancelOrder({ params, request, response }: HttpContext) {
-    const { id } = await orderIdValidator.validate(params)
-    const { reason } = await request.validateUsing(cancelOrderValidator)
-
-    const order = await Order.find(id)
-    if (!order) {
-      throw new OrderNotFoundException(id)
-    }
-
-    // Verificar se o pedido pode ser cancelado
-    if (order.paymentStatus === 'CANCELLED') {
-      return response.status(400).json({ error: 'Pedido já foi cancelado' })
-    }
-
-    // Salvar status original para o email
-    const originalStatus = order.paymentStatus
-    const wasPaid = originalStatus === 'PAID'
-
-    // Atualizar status do pedido baseado no status atual
-    if (originalStatus === 'PAID') {
-      order.paymentStatus = OrderPaymentStatus.CHARGED_BACK
-    } else {
-      order.paymentStatus = OrderPaymentStatus.CANCELLED
-    }
-    await order.save()
-
-    // Carregar dados do usuário e itens para o email
-    await order.load('user')
-    await order.load('items', (itemsQuery) => {
-      itemsQuery.preload('product')
-    })
-
-    // Enviar email de notificação com status original
-    await this.emailService.sendOrderCancellationEmail(order.user, order, reason, wasPaid)
-
-    // Log do motivo para debug (remover em produção)
-    console.log('Pedido cancelado com motivo:', reason)
-
-    return response.json({
-      message: 'Pedido cancelado com sucesso',
-      order: order,
     })
   }
 }

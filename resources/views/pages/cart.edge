@@ -219,12 +219,72 @@
                 </div>
               </div>
 
+              <!-- Seleção de método de pagamento -->
+              <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-3">Método de Pagamento</label>
+                <div class="space-y-3">
+                  <!-- PIX -->
+                  <label class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="PIX"
+                      x-model="$store.cart.selectedPaymentMethod"
+                      class="w-4 h-4 text-orange-600 border-gray-300 focus:ring-orange-500"
+                    />
+                    <div class="flex items-center space-x-2">
+                      <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                      </svg>
+                      <span class="text-sm font-medium text-gray-900">PIX</span>
+                      <span class="text-xs text-gray-500">Pagamento instantâneo</span>
+                    </div>
+                  </label>
+
+            <!-- Mercado Pago -->
+            <label class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+              <input
+                type="radio"
+                name="paymentMethod"
+                value="MERCADO_PAGO"
+                x-model="$store.cart.selectedPaymentMethod"
+                class="w-4 h-4 text-orange-600 border-gray-300 focus:ring-orange-500"
+              />
+              <div class="flex items-center space-x-2">
+                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+                <span class="text-sm font-medium text-gray-900">Mercado Pago</span>
+                <span class="text-xs text-gray-500">Cartão, PIX, Boleto</span>
+              </div>
+            </label>
+
+            <!-- Stripe -->
+            <label class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+              <input
+                type="radio"
+                name="paymentMethod"
+                value="STRIPE"
+                x-model="$store.cart.selectedPaymentMethod"
+                class="w-4 h-4 text-orange-600 border-gray-300 focus:ring-orange-500"
+              />
+              <div class="flex items-center space-x-2">
+                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+                <span class="text-sm font-medium text-gray-900">Stripe</span>
+                <span class="text-xs text-gray-500">Cartão de Crédito</span>
+              </div>
+            </label>
+                </div>
+              </div>
+
               <!-- Botão finalizar compra -->
               <button
                 class="w-full bg-orange-600 text-white py-3 px-4 rounded-md text-sm font-medium hover:bg-orange-700 mt-6"
-                @click="$store.cart.createOrder('PIX')"
-                x-bind:disabled="$store.cart.isCreatingOrder"
-                x-bind:class="{ 'opacity-50 cursor-not-allowed': $store.cart.isCreatingOrder }"
+                @click="$store.cart.createOrder($store.cart.selectedPaymentMethod)"
+                x-bind:disabled="$store.cart.isCreatingOrder || !$store.cart.selectedPaymentMethod"
+                x-bind:class="{ 'opacity-50 cursor-not-allowed': $store.cart.isCreatingOrder || !$store.cart.selectedPaymentMethod }"
               >
                 <span x-show="!$store.cart.isCreatingOrder">Finalizar Compra</span>
                 <span x-show="$store.cart.isCreatingOrder" class="flex items-center gap-2">

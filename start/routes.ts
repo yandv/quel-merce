@@ -20,6 +20,7 @@ const OrderController = () => import('#controllers/order_controller')
 const CouponsController = () => import('#controllers/coupons_controller')
 const YearsController = () => import('#controllers/years_controller')
 const DashboardController = () => import('#controllers/dashboard_controller')
+const WebhookController = () => import('#controllers/webhook_controller')
 
 router
   .group(() => {
@@ -28,6 +29,7 @@ router
     router.on('/login').render('pages/login')
     router.on('/products/:slug').render('pages/product-details')
     router.on('/category/:slug').render('pages/category')
+    router.on('/checkout/:id').render('pages/checkout')
     router.on('/verify-email').render('pages/verify-email')
     router.on('/magic-link/:code').render('pages/magic-link')
     router.on('/forbidden').render('pages/forbidden')
@@ -38,7 +40,6 @@ router
 
 router
   .group(() => {
-    router.on('/checkout/:id').render('pages/checkout')
     router.on('/my-profile').render('pages/my-profile')
   })
   .middleware(middleware.auth())
@@ -160,6 +161,7 @@ router
           .get('/summary', [OrderController, 'getOrderSummary'])
           .middleware([middleware.role({ requiredRole: UserRole.SELLER })])
         router.get(':id', [OrderController, 'getOrderById'])
+        router.patch(':id/payment-method', [OrderController, 'updatePaymentMethod'])
         router
           .patch(':id/cancel', [OrderController, 'cancelOrder'])
           .middleware([middleware.role({ requiredRole: UserRole.SELLER })])
@@ -196,5 +198,12 @@ router
           .middleware([middleware.auth(), middleware.role({ requiredRole: UserRole.SELLER })])
       })
       .prefix('dashboard')
+
+    router
+      .group(() => {
+        router.post('/mercado-pago', [WebhookController, 'executeMercadoPago'])
+        router.post('/stripe', [WebhookController, 'executeStripe'])
+      })
+      .prefix('webhooks')
   })
   .prefix('api')

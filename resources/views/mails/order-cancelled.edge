@@ -1,207 +1,268 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pedido cancelado - QuelMerce</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      Pedido cancelado - QuelMerce
+    </title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
-        .container {
-            background-color: #ffffff;
-            border-radius: 8px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .header {
-            text-align: center;
-            border-bottom: 2px solid #f97316;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #f97316;
-            margin-bottom: 10px;
-        }
-        .title {
-            color: #dc2626;
-            font-size: 20px;
-            margin-bottom: 20px;
-        }
-        .order-info {
-            background-color: #f9fafb;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-        .order-details {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-        }
-        .order-details strong {
-            color: #374151;
-        }
-        .warning-box {
-            background-color: #fef2f2;
-            border: 1px solid #fecaca;
-            border-radius: 6px;
-            padding: 15px;
-            margin: 20px 0;
-        }
-        .warning-title {
-            color: #dc2626;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        .refund-info {
-            background-color: #f0f9ff;
-            border: 1px solid #bae6fd;
-            border-radius: 6px;
-            padding: 15px;
-            margin: 20px 0;
-        }
-        .refund-title {
-            color: #0369a1;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        .reason-section {
-            background-color: #f9fafb;
-            border-left: 4px solid #6b7280;
-            padding: 15px;
-            margin: 20px 0;
-        }
-        .footer {
-            text-align: center;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #e5e7eb;
-            color: #6b7280;
-            font-size: 14px;
-        }
-        .button {
-            display: inline-block;
-            background-color: #f97316;
-            color: white;
-            padding: 12px 24px;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: bold;
-            margin: 20px 0;
-        }
-        .items-list {
-            margin: 15px 0;
-        }
-        .item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        .item:last-child {
-            border-bottom: none;
-        }
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f4f4f4;
+      }
+      
+      .container {
+        background-color: #ffffff;
+        border-radius: 8px;
+        padding: 30px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      }
+      
+      .header {
+        text-align: center;
+        border-bottom: 2px solid #f97316;
+        padding-bottom: 20px;
+        margin-bottom: 30px;
+      }
+      
+      .logo {
+        font-size: 24px;
+        font-weight: bold;
+        color: #f97316;
+        margin-bottom: 10px;
+      }
+      
+      .title {
+        color: #dc2626;
+        font-size: 20px;
+        margin-bottom: 20px;
+      }
+      
+      .order-info {
+        background-color: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        padding: 20px;
+        margin: 20px 0;
+      }
+      
+      .order-details {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+      }
+      
+      .order-details strong {
+        color: #374151;
+      }
+      
+      .warning-box {
+        background-color: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 6px;
+        padding: 15px;
+        margin: 20px 0;
+      }
+      
+      .warning-title {
+        color: #dc2626;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+      
+      .refund-info {
+        background-color: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 6px;
+        padding: 15px;
+        margin: 20px 0;
+      }
+      
+      .refund-title {
+        color: #0369a1;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+      
+      .reason-section {
+        background-color: #f9fafb;
+        border-left: 4px solid #6b7280;
+        padding: 15px;
+        margin: 20px 0;
+      }
+      
+      .footer {
+        text-align: center;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+        color: #6b7280;
+        font-size: 14px;
+      }
+      
+      .button {
+        display: inline-block;
+        background-color: #f97316;
+        color: white;
+        padding: 12px 24px;
+        text-decoration: none;
+        border-radius: 6px;
+        font-weight: bold;
+        margin: 20px 0;
+      }
+      
+      .items-list {
+        margin: 15px 0;
+      }
+      
+      .item {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      
+      .item:last-child {
+        border-bottom: none;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div class="header">
-            <div class="logo">QuelMerce</div>
-            <h1 class="title">Pedido cancelado</h1>
+      <div class="header">
+        <div class="logo">
+          QuelMerce
         </div>
+        <h1 class="title">
+          Pedido cancelado
+        </h1>
+      </div>
 
-        <p>Olá <strong>{{ user.fullName }}</strong>,</p>
-        
-        <p>Informamos que seu pedido foi cancelado. Abaixo estão os detalhes:</p>
+      <p>
+        Olá <strong>{{ user.fullName }}</strong>,
+      </p>
 
-        <div class="order-info">
-            <div class="order-details">
-                <span><strong>Número do Pedido:</strong></span>
-                <span>#{{ order.id }}</span>
-            </div>
-            <div class="order-details">
-                <span><strong>Data do Pedido:</strong></span>
-                <span>{{ new Date(order.createdAt).toLocaleDateString('pt-BR', { 
+      <p>
+        Informamos que seu pedido foi cancelado. Abaixo estão os detalhes:
+      </p>
+
+      <div class="order-info">
+        <div class="order-details">
+          <span>            <strong>Código do Pedido:</strong></span>
+          <span>{{ order.id }}</span>
+        </div>
+        <div class="order-details">
+          <span>            <strong>Data do Pedido:</strong></span>
+          <span>{{ new Date(order.createdAt).toLocaleDateString('pt-BR', { 
                     day: '2-digit', 
                     month: '2-digit', 
                     year: 'numeric',
                     hour: '2-digit',
                     minute: '2-digit'
                 }) }}</span>
-            </div>
-            <div class="order-details">
-                <span><strong>Valor Total:</strong></span>
-                <span>R$ {{ parseFloat(order.total).toFixed(2).replace('.', ',') }}</span>
-            </div>
         </div>
+        <div class="order-details">
+          <span>            <strong>Valor Total:</strong></span>
+          <span>R$ {{ parseFloat(order.total).toFixed(2).replace('.', ',') }}</span>
+        </div>
+      </div>
 
-        @if(reason)
+      @if(reason)
         <div class="reason-section">
-            <h3>Motivo do Cancelamento:</h3>
-            <p><em>"{{ reason }}"</em></p>
+          <h3>
+            Motivo do Cancelamento:
+          </h3>
+          <p>
+            <em>"{{ reason }}"</em>
+          </p>
         </div>
-        @endif
-
-        @if(isPaid)
+      @endif
+      
+      @if(isPaid)
         <div class="warning-box">
-            <div class="warning-title">⚠️ IMPORTANTE - Pedido Pago</div>
-            <p>Este pedido já havia sido pago e será <strong>estornado</strong>.</p>
-            <ul>
-                <li>O valor será devolvido ao seu método de pagamento original</li>
-                <li>O estorno pode levar até <strong>24 horas</strong> para ser processado</li>
-                <li>Você receberá uma confirmação por email quando o estorno for processado</li>
-            </ul>
+          <div class="warning-title">
+            ⚠️ IMPORTANTE - Pedido Pago
+          </div>
+          <p>
+            Este pedido já havia sido pago e será <strong>estornado</strong>.
+          </p>
+          <ul>
+            <li>
+              O valor será devolvido ao seu método de pagamento original
+            </li>
+            <li>
+              O estorno pode levar até <strong>24 horas</strong>para ser processado
+            </li>
+            <li>
+              Você receberá uma confirmação por email quando o estorno for processado
+            </li>
+          </ul>
         </div>
 
         <div class="refund-info">
-            <div class="refund-title">💳 Informações sobre o Estorno</div>
-            <p>O valor de <strong>R$ {{ parseFloat(order.total).toFixed(2).replace('.', ',') }}</strong> será estornado em até 24 horas.</p>
-            <p>Se você não receber o estorno neste prazo, entre em contato conosco.</p>
+          <div class="refund-title">
+            💳 Informações sobre o Estorno
+          </div>
+          <p>
+            O valor de <strong>R$ {{ parseFloat(order.total).toFixed(2).replace('.', ',') }}</strong>será estornado em até 24 horas.
+          </p>
+          <p>
+            Se você não receber o estorno neste prazo, entre em contato conosco.
+          </p>
         </div>
-        @else
+      @else
         <div class="warning-box">
-            <div class="warning-title">ℹ️ Pedido Pendente</div>
-            <p>Este pedido ainda não havia sido pago, então não há necessidade de estorno.</p>
+          <div class="warning-title">
+            ℹ️ Pedido Pendente
+          </div>
+          <p>
+            Este pedido ainda não havia sido pago, então não há necessidade de estorno.
+          </p>
         </div>
-        @endif
-
-        <div class="items-list">
-            <h3>Itens do Pedido:</h3>
-            @each(item in order.items)
-            <div class="item">
-                <div>
-                    <strong>{{ item.product.name }}</strong><br>
-                    <small>Quantidade: {{ item.quantity }}</small>
-                </div>
-                <div>
-                    R$ {{ parseFloat(item.price).toFixed(2).replace('.', ',') }}
-                </div>
+      @endif
+      
+      <div class="items-list">
+        <h3>
+          Itens do Pedido:
+        </h3>
+        @each(item in order.items)
+          <div class="item">
+            <div>
+              <strong>{{ item.product.name }}</strong>              <br />
+              <small>Quantidade: {{ item.quantity }}</small>
             </div>
-            @endeach
-        </div>
+            <div>
+              R$ {{ parseFloat(item.price).toFixed(2).replace('.', ',') }}
+            </div>
+          </div>
+        @endeach
+      </div>
 
-        <p>Se você tiver alguma dúvida sobre este cancelamento, entre em contato conosco através do nosso suporte.</p>
+      <p>
+        Se você tiver alguma dúvida sobre este cancelamento, entre em contato conosco através do nosso suporte.
+      </p>
 
-        <div style="text-align: center;">
-            <a href="{{ appUrl }}/orders" class="button">Ver Meus Pedidos</a>
-        </div>
+      <div style="text-align: center;">
+        <a href="{{ appUrl }}/orders" class="button">Ver Meus Pedidos</a>
+      </div>
 
-        <div class="footer">
-            <p>Este é um email automático, por favor não responda.</p>
-            <p>QuelMerce - Sua loja de peças automotivas</p>
-            <p>{{ appUrl }}</p>
-        </div>
+      <div class="footer">
+        <p>
+          Este é um email automático, por favor não responda.
+        </p>
+        <p>
+          QuelMerce - Sua loja de peças automotivas
+        </p>
+        <p>
+          {{ appUrl }}
+        </p>
+      </div>
     </div>
-</body>
+  </body>
 </html>

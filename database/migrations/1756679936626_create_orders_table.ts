@@ -9,9 +9,11 @@ export default class extends BaseSchema {
 
       table.uuid('user_id').references('id').inTable('users').onDelete('CASCADE')
 
-      table.enum('payment_method', ['PIX', 'CREDIT_CARD', 'DEBIT_CARD']).notNullable()
+      table.enum('payment_method', ['PIX', 'MERCADO_PAGO', 'STRIPE']).notNullable()
       table.enum('payment_status', ['PENDING', 'PAID', 'CANCELLED', 'CHARGED_BACK']).notNullable()
       table.timestamp('paid_at').nullable()
+      table.decimal('total', 10, 2).notNullable().defaultTo(0)
+      table.decimal('discount', 10, 2).notNullable().defaultTo(0)
 
       table.uuid('coupon_id').references('id').inTable('coupons').onDelete('CASCADE').nullable()
 

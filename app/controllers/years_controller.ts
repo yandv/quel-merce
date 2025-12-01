@@ -1,10 +1,6 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import Year from '#models/year'
-import {
-  sortAndPaginationValidator,
-  includesValidator,
-  parseToArray,
-} from '#validators/default_validators'
+import { sortAndPaginationValidator, includesValidator } from '#validators/default_validators'
 import { yearSearchValidator } from '#validators/year_validator'
 
 export default class YearsController {
@@ -16,7 +12,7 @@ export default class YearsController {
     const data = request.all()
 
     const { sort, page = 1, itemsPerPage = 10 } = await sortAndPaginationValidator.validate(data)
-    const { includes } = await includesValidator.validate(data)
+    const { includes = [] } = await includesValidator.validate(data)
     const { search } = await yearSearchValidator.validate(data)
 
     const query = Year.query()
@@ -33,12 +29,6 @@ export default class YearsController {
         .orWhereRaw('LOWER(UNACCENT(CAST(year AS TEXT))) LIKE ?', [`%${search.toLowerCase()}%`])
     }
 
-    // Filtro de anos excluídos
-    // if (excludedYears.length > 0) {
-    //   console.log(excludedYearsArray)
-    //   query.whereNotIn('id', excludedYearsArray)
-    // }
-
     if (includes.includes('model')) {
       query.preload('model')
     }
@@ -49,7 +39,6 @@ export default class YearsController {
       })
     }
 
-    // Ordenação
     if (sort) {
       query.orderBy(sort.map((item) => ({ column: item.field, order: item.order })))
     } else {

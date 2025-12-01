@@ -9,7 +9,6 @@ export const productQueryValidator = vine.compile(
     yearId: vine.string().optional(),
     modelId: vine.string().optional(),
     brandId: vine.string().optional(),
-    includes: vine.string().optional(),
   })
 )
 

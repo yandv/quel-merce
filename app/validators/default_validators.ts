@@ -48,17 +48,11 @@ export const parseToArray = (value: string | string[] | undefined) => {
 
 export const includesValidator = vine.compile(
   vine.object({
-    includes: vine.union([
-      vine.union.if(
-        (value) => vine.helpers.isString(value),
-        vine
-          .string()
-          .regex(/^[a-zA-Z_][a-zA-Z0-9_]*(?:,[a-zA-Z_][a-zA-Z0-9_]*)*$/)
-          .transform((value) => value?.split(','))
-      ),
-      vine.union.if((value) => Array.isArray(value), vine.array(vine.string())),
-      vine.union.else(vine.literal([] as string[])),
-    ]),
+    includes: vine
+      .string()
+      .regex(/^[a-zA-Z_][a-zA-Z0-9_]*(?:,[a-zA-Z_][a-zA-Z0-9_]*)*$/)
+      .optional()
+      .transform((value) => value?.split(',')),
   })
 )
 

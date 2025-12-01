@@ -32,7 +32,7 @@ export class EmailService {
         message
           .from('no-reply@quelmerce.com')
           .to(user.email)
-          .subject(`Pedido #${order.id} foi cancelado - QuelMerce`)
+          .subject(`Pedido ${order.id} foi cancelado - QuelMerce`)
           .htmlView('mails/order-cancelled', {
             user,
             order,
@@ -53,7 +53,7 @@ export class EmailService {
         message
           .from('no-reply@quelmerce.com')
           .to(user.email)
-          .subject(`Pedido #${order.id} criado com sucesso - QuelMerce`)
+          .subject(`Pedido ${order.id} criado com sucesso - QuelMerce`)
           .htmlView('mails/order-created', {
             user,
             order,
@@ -62,6 +62,33 @@ export class EmailService {
       })
     } catch (error) {
       console.error('Error sending order confirmation email', error)
+    }
+  }
+
+  public async sendPaymentApprovedEmail(user: User, order: Order) {
+    try {
+      const appUrl = env.get('PUBLIC_APP_URL')
+      await mail.send((message) => {
+        message
+          .from('no-reply@quelmerce.com')
+          .to(user.email)
+          .subject(`🎉 Pagamento aprovado - Pedido #${order.id} - QuelMerce`)
+          .htmlView('mails/payment-approved', {
+            user,
+            order,
+            appUrl,
+            getPaymentMethodText: (method: string) => {
+              const methods: Record<string, string> = {
+                PIX: 'PIX',
+                MERCADO_PAGO: 'Mercado Pago',
+                STRIPE: 'Stripe',
+              }
+              return methods[method] || method
+            },
+          })
+      })
+    } catch (error) {
+      console.error('Error sending payment approved email', error)
     }
   }
 }

@@ -249,7 +249,7 @@
 
       async loadRecentOrders() {
         try {
-          const response = await fetch('/api/orders?limit=5&sort=-createdAt');
+          const response = await fetch('/api/orders?itemsPerPage=5&sort=-createdAt&includes=user');
           const data = await response.json();
           this.recentOrders = data.data || [];
         } catch (error) {

@@ -93,7 +93,6 @@ export default class CategoriesController {
 
     const subcategoryIds = await this.getAllSubcategoryIds(category.id)
 
-    // Incluir a categoria principal e todas as subcategorias
     const allCategoryIds = [category.id, ...subcategoryIds]
 
     const query = Product.query()

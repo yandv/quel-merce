@@ -44,6 +44,7 @@ document.addEventListener('alpine:init', () => {
     couponError: null,
     couponCode: '',
     isCreatingOrder: false,
+    selectedPaymentMethod: null,
 
     getItems() {
       return this.items

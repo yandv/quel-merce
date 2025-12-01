@@ -17,6 +17,6 @@ export default defineConfig({
     }),
   ],
   server: {
-    allowedHosts: ['quel-merce.onrender.com'],
+    allowedHosts: ['quel-merce.onrender.com', 'c3e0d490cdaa.ngrok-free.app'],
   },
 })

@@ -286,7 +286,10 @@
 
       async loadOrder() {
         try {
-          const response = await fetch(`/api/orders/${this.orderId}?includes=user,items,coupon`);
+          const params = new URLSearchParams({
+            includes: 'user,items,coupon,payment'
+          });
+          const response = await fetch(`/api/orders/${this.orderId}?${params.toString()}`);
           if (response.ok) {
             this.order = await response.json();
           } else {

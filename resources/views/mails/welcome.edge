@@ -1,118 +1,136 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bem-vindo ao QuelMerce</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      Bem-vindo ao QuelMerce
+    </title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background-color: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-        .header {
-            background-color: #4f46e5;
-            padding: 30px;
-            text-align: center;
-        }
-        .header h1 {
-            color: #ffffff;
-            font-size: 24px;
-            font-weight: bold;
-            margin: 0;
-        }
-        .content {
-            padding: 30px;
-        }
-        .content h2 {
-            color: #1f2937;
-            font-size: 20px;
-            font-weight: 600;
-            margin: 0 0 20px 0;
-        }
-        .content p {
-            color: #6b7280;
-            margin: 16px 0;
-            line-height: 1.6;
-        }
-        .button-container {
-            text-align: center;
-            margin: 24px 0;
-        }
-        .button {
-            display: inline-block;
-            background-color: #4f46e5;
-            color: #ffffff;
-            font-weight: 500;
-            padding: 12px 24px;
-            border-radius: 8px;
-            text-decoration: none;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.2s;
-        }
-        .button:hover {
-            background-color: #3730a3;
-        }
-        .link-text {
-            font-size: 14px;
-            color: #6b7280;
-            margin: 24px 0 8px 0;
-        }
-        .link-url {
-            font-size: 14px;
-            color: #2563eb;
-            word-break: break-all;
-        }
-        .footer {
-            background-color: #f9fafb;
-            padding: 16px;
-            text-align: center;
-            font-size: 12px;
-            color: #6b7280;
-        }
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 20px;
+      }
+      
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+      
+      .header {
+        background-color: #4f46e5;
+        padding: 30px;
+        text-align: center;
+      }
+      
+      .header h1 {
+        color: #ffffff;
+        font-size: 24px;
+        font-weight: bold;
+        margin: 0;
+      }
+      
+      .content {
+        padding: 30px;
+      }
+      
+      .content h2 {
+        color: #1f2937;
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0 0 20px 0;
+      }
+      
+      .content p {
+        color: #6b7280;
+        margin: 16px 0;
+        line-height: 1.6;
+      }
+      
+      .button-container {
+        text-align: center;
+        margin: 24px 0;
+      }
+      
+      .button {
+        display: inline-block;
+        background-color: #4f46e5;
+        color: #ffffff;
+        font-weight: 500;
+        padding: 12px 24px;
+        border-radius: 8px;
+        text-decoration: none;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: background-color 0.2s;
+      }
+      
+      .button:hover {
+        background-color: #3730a3;
+      }
+      
+      .link-text {
+        font-size: 14px;
+        color: #6b7280;
+        margin: 24px 0 8px 0;
+      }
+      
+      .link-url {
+        font-size: 14px;
+        color: #2563eb;
+        word-break: break-all;
+      }
+      
+      .footer {
+        background-color: #f9fafb;
+        padding: 16px;
+        text-align: center;
+        font-size: 12px;
+        color: #6b7280;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div class="header">
-            <h1>🚀 Bem-vindo ao QuelMerce</h1>
-        </div>
-        
-        <div class="content">
-            <h2>Olá, {{ user.fullName }} 👋</h2>
-            <p>
-                Estamos muito felizes em ter você conosco!<br>
-                Para completar seu cadastro, precisamos confirmar seu endereço de e-mail.
-            </p>
+      <div class="header">
+        <h1>
+          🚀 Bem-vindo ao QuelMerce
+        </h1>
+      </div>
 
-            <div class="button-container">
-                <a href="{{ link }}" class="button">
-                    Verificar meu e-mail
+      <div class="content">
+        <h2>
+          Olá, {{ user.fullName }} 👋
+        </h2>
+        <p>
+          Estamos muito felizes em ter você conosco!<br />
+          Para completar seu cadastro, precisamos confirmar seu endereço de e-mail.
+        </p>
+
+        <div class="button-container">
+          <a href="{{ link }}" class="button">
+            Verificar meu e-mail
                 </a>
-            </div>
-
-            <p class="link-text">
-                Se o botão não funcionar, copie e cole o link abaixo no seu navegador:
-            </p>
-            <p class="link-url">
-                {{ link }}
-            </p>
         </div>
 
-        <div class="footer">
-            © {{ new Date().getFullYear() }} QuelMerce. Todos os direitos reservados.
-        </div>
+        <p class="link-text">
+          Se o botão não funcionar, copie e cole o link abaixo no seu navegador:
+        </p>
+        <p class="link-url">
+          {{ link }}
+        </p>
+      </div>
+
+      <div class="footer">
+        © {{ new Date().getFullYear() }} QuelMerce. Todos os direitos reservados.
+      </div>
     </div>
-</body>
+  </body>
 </html>

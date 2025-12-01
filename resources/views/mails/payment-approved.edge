@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
-      Pedido Criado - QuelMerce
+      Pagamento Aprovado - QuelMerce
     </title>
     <style>
       body {
@@ -28,7 +28,7 @@
         text-align: center;
         margin-bottom: 30px;
         padding-bottom: 20px;
-        border-bottom: 2px solid #f97316;
+        border-bottom: 2px solid #10b981;
       }
       
       .logo {
@@ -38,11 +38,18 @@
         margin-bottom: 10px;
       }
       
+      .success-icon {
+        font-size: 48px;
+        color: #10b981;
+        margin-bottom: 20px;
+      }
+      
       .order-info {
-        background-color: #f8f9fa;
+        background-color: #f0fdf4;
         padding: 20px;
         border-radius: 8px;
         margin: 20px 0;
+        border-left: 4px solid #10b981;
       }
       
       .order-number {
@@ -59,16 +66,22 @@
         font-size: 14px;
         font-weight: bold;
         margin-bottom: 15px;
-      }
-      
-      .status.pending {
-        background-color: #fef3c7;
-        color: #92400e;
-      }
-      
-      .status.paid {
         background-color: #d1fae5;
         color: #065f46;
+      }
+      
+      .payment-details {
+        background-color: #f0fdf4;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 20px 0;
+        border-left: 4px solid #10b981;
+      }
+      
+      .payment-title {
+        color: #065f46;
+        font-weight: bold;
+        margin-bottom: 10px;
       }
       
       .items-table {
@@ -111,12 +124,18 @@
         margin-top: 15px;
       }
       
-      .payment-info {
-        background-color: #fef3c7;
-        padding: 15px;
+      .next-steps {
+        background-color: #eff6ff;
+        padding: 20px;
         border-radius: 8px;
         margin: 20px 0;
-        border-left: 4px solid #f59e0b;
+        border-left: 4px solid #3b82f6;
+      }
+      
+      .next-steps-title {
+        color: #1e40af;
+        font-weight: bold;
+        margin-bottom: 15px;
       }
       
       .footer {
@@ -130,7 +149,7 @@
       
       .button {
         display: inline-block;
-        background-color: #f97316;
+        background-color: #10b981;
         color: white;
         padding: 12px 24px;
         text-decoration: none;
@@ -140,7 +159,7 @@
       }
       
       .button:hover {
-        background-color: #ea580c;
+        background-color: #059669;
       }
     </style>
   </head>
@@ -150,8 +169,11 @@
         <div class="logo">
           QuelMerce
         </div>
-        <h1>
-          Pedido Criado com Sucesso!
+        <div class="success-icon">
+          ✅
+        </div>
+        <h1 style="color: #10b981; margin: 0;">
+          Pagamento Aprovado!
         </h1>
       </div>
 
@@ -160,21 +182,33 @@
       </p>
 
       <p>
-        Seu pedido foi criado com sucesso! Aqui estão os detalhes:
+        🎉 <strong>Ótimas notícias!</strong>Seu pagamento foi aprovado com sucesso!
       </p>
 
       <div class="order-info">
         <div class="order-number">
-          Pedido #{{ order.id }}
+          Pedido {{ order.id }}
         </div>
-        <div class="status {{ order.paymentStatus.toLowerCase() }}">
-          {{ order.paymentStatus === 'PENDING' ? 'Aguardando Pagamento' : 'Pago' }}
+        <div class="status">
+          ✅ Pago
         </div>
         <p>
-          <strong>Data:</strong>{{ order.createdAt ? order.createdAt.toFormat('dd/MM/yyyy HH:mm') : 'Data não disponível' }}
+          <strong>Data do Pagamento:</strong>{{ order.paidAt ? order.paidAt.toFormat('dd/MM/yyyy HH:mm') : 'Data não disponível' }}
         </p>
         <p>
-          <strong>Método de Pagamento:</strong>{{ order.paymentMethod }}
+          <strong>Método de Pagamento:</strong>{{ getPaymentMethodText(order.paymentMethod) }}
+        </p>
+      </div>
+
+      <div class="payment-details">
+        <div class="payment-title">
+          💳 Detalhes do Pagamento
+        </div>
+        <p>
+          Seu pagamento foi processado com sucesso.
+        </p>
+        <p>
+          <strong>Valor Pago:</strong>R$ {{ Number(order.total).toFixed(2).replace('.', ',') }}
         </p>
       </div>
 
@@ -221,7 +255,7 @@
       <div class="total-section">
         <div class="total-row">
           <span>Subtotal:</span>
-          <span>R$ {{ Number(order.total + order.discount).toFixed(2).replace('.', ',') }}</span>
+          <span>R$ {{ (Number(order.total) + Number(order.discount)).toFixed(2).replace('.', ',') }}</span>
         </div>
         @if(order.discount > 0)
           <div class="total-row">
@@ -230,22 +264,22 @@
           </div>
         @endif
         <div class="total-row final">
-          <span>Total:</span>
+          <span>Total Pago:</span>
           <span>R$ {{ Number(order.total).toFixed(2).replace('.', ',') }}</span>
         </div>
       </div>
 
-      @if(order.paymentStatus === 'PENDING')
-        <div class="payment-info">
-          <h4>
-            💰 Informações de Pagamento
-          </h4>
-          <p>
-            Para finalizar seu pedido, realize o pagamento via PIX. Você receberá as instruções de pagamento em breve.
-          </p>
+      <div class="next-steps">
+        <div class="next-steps-title">
+          🚚 Próximos Passos
         </div>
-      @endif
-      
+        <ul>
+          <li>
+            Você pode acompanhar o status do seu pedido a qualquer momento
+          </li>
+        </ul>
+      </div>
+
       <div style="text-align: center; margin: 30px 0;">
         <a href="{{ appUrl }}/checkout/{{ order.id }}" class="button">
           Ver Detalhes do Pedido

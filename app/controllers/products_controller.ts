@@ -11,7 +11,7 @@ import Category from '#models/category'
 import ProductNotFoundException from '#exceptions/product/product_not_found_exception'
 import db from '@adonisjs/lucid/services/db'
 import { DateTime } from 'luxon'
-import { sortAndPaginationValidator } from '#validators/default_validators'
+import { includesValidator, sortAndPaginationValidator } from '#validators/default_validators'
 
 export default class ProductsController {
   /**
@@ -20,8 +20,9 @@ export default class ProductsController {
    * e por IDs (yearId, modelId, brandId)
    */
   async getProducts({ request, response }: HttpContext) {
-    const { name, yearName, modelName, brandName, yearId, modelId, brandId, includes } =
+    const { name, yearName, modelName, brandName, yearId, modelId, brandId } =
       await productQueryValidator.validate(request.all())
+    const { includes = [] } = await includesValidator.validate(request.all())
     const {
       sort,
       page = 1,
@@ -30,14 +31,11 @@ export default class ProductsController {
 
     const query = Product.query()
 
-    // Processar includes
-    const includeArray = includes ? includes.split(',').map((item) => item.trim()) : []
-
-    if (includeArray.includes('category')) {
+    if (includes.includes('category')) {
       query.preload('category')
     }
 
-    if (includeArray.includes('years')) {
+    if (includes.includes('years')) {
       query.preload('years', (yearQuery) => {
         yearQuery.preload('model', (modelQuery) => {
           modelQuery.preload('brand')
@@ -45,12 +43,10 @@ export default class ProductsController {
       })
     }
 
-    // Filtro por nome do produto
     if (name) {
       query.whereRaw('LOWER(UNACCENT(name)) LIKE ?', [`%${name.toLowerCase()}%`])
     }
 
-    // Filtro por nome do ano
     if (yearName) {
       query.whereHas('years', (yearQuery) => {
         yearQuery.whereRaw('LOWER(UNACCENT(CAST(year AS TEXT))) LIKE ?', [
@@ -59,7 +55,6 @@ export default class ProductsController {
       })
     }
 
-    // Filtro por nome do modelo
     if (modelName) {
       query.whereHas('years', (yearQuery) => {
         yearQuery.whereHas('model', (modelQuery) => {
@@ -68,7 +63,6 @@ export default class ProductsController {
       })
     }
 
-    // Filtro por nome da marca
     if (brandName) {
       query.whereHas('years', (yearQuery) => {
         yearQuery.whereHas('model', (modelQuery) => {
@@ -79,14 +73,12 @@ export default class ProductsController {
       })
     }
 
-    // Filtro por ID do ano
     if (yearId) {
       query.whereHas('years', (yearQuery) => {
         yearQuery.where('id', yearId)
       })
     }
 
-    // Filtro por ID do modelo
     if (modelId) {
       query.whereHas('years', (yearQuery) => {
         yearQuery.whereHas('model', (modelQuery) => {
@@ -95,7 +87,6 @@ export default class ProductsController {
       })
     }
 
-    // Filtro por ID da marca
     if (brandId) {
       query.whereHas('years', (yearQuery) => {
         yearQuery.whereHas('model', (modelQuery) => {
@@ -194,7 +185,6 @@ export default class ProductsController {
         { client: trx }
       )
 
-      // Associar anos se fornecidos
       if (data.yearIds && data.yearIds.length > 0) {
         await newProduct.related('years').attach(data.yearIds)
       }
@@ -202,7 +192,6 @@ export default class ProductsController {
       return newProduct
     })
 
-    // Carregar relacionamentos
     await product.load('category')
     await product.load('years', (yearQuery) => {
       yearQuery.preload('model', (modelQuery) => {
@@ -227,7 +216,6 @@ export default class ProductsController {
     }
 
     await db.transaction(async () => {
-      // Atualizar dados do produto
       product.merge({
         name: data.name,
         description: data.description,
@@ -240,13 +228,11 @@ export default class ProductsController {
 
       await product.save()
 
-      // Atualizar anos se fornecidos
       if (data.yearIds !== undefined) {
         await product.related('years').sync(data.yearIds)
       }
     })
 
-    // Carregar relacionamentos atualizados
     await product.load('category')
     await product.load('years', (yearQuery) => {
       yearQuery.preload('model', (modelQuery) => {

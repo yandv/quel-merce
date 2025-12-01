@@ -51,7 +51,6 @@ export default class Coupon extends BaseModel {
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
 
-  // Relacionamentos
   @hasMany(() => Order)
   declare orders: HasMany<typeof Order>
 }

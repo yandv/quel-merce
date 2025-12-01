@@ -10,6 +10,8 @@ export default class extends BaseSchema {
       table.string('email', 254).notNullable().unique()
       table.string('avatar_url').nullable()
       table.string('password').notNullable()
+      table.timestamp('email_verified_at').nullable()
+      table.enum('role', ['ADMIN', 'SELLER', 'CUSTOMER']).notNullable().defaultTo('CUSTOMER')
 
       table.timestamp('created_at').notNullable().defaultTo(this.raw('CURRENT_TIMESTAMP'))
       table.timestamp('updated_at').nullable()

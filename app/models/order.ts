@@ -1,9 +1,10 @@
 import { DateTime } from 'luxon'
-import { BaseModel, belongsTo, column, hasMany } from '@adonisjs/lucid/orm'
-import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
+import { BaseModel, belongsTo, column, hasMany, hasOne } from '@adonisjs/lucid/orm'
+import type { BelongsTo, HasMany, HasOne } from '@adonisjs/lucid/types/relations'
 import User from './user.js'
 import OrderItem from './order_item.js'
 import Coupon from './coupon.js'
+import Payment from './payment.js'
 
 export enum OrderPaymentStatus {
   PENDING = 'PENDING',
@@ -14,8 +15,8 @@ export enum OrderPaymentStatus {
 
 export enum PaymentMethod {
   PIX = 'PIX',
-  CREDIT_CARD = 'CREDIT_CARD',
-  DEBIT_CARD = 'DEBIT_CARD',
+  MERCADO_PAGO = 'MERCADO_PAGO',
+  STRIPE = 'STRIPE',
 }
 
 export default class Order extends BaseModel {
@@ -60,6 +61,12 @@ export default class Order extends BaseModel {
     localKey: 'id',
   })
   declare items: HasMany<typeof OrderItem>
+
+  @hasOne(() => Payment, {
+    foreignKey: 'orderId',
+    localKey: 'id',
+  })
+  declare payment: HasOne<typeof Payment>
 
   @column()
   @column.dateTime({ autoCreate: true })

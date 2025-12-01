@@ -2,6 +2,7 @@ import app from '@adonisjs/core/services/app'
 import { HttpContext, ExceptionHandler } from '@adonisjs/core/http'
 import type { StatusPageRange, StatusPageRenderer } from '@adonisjs/core/types/http'
 import DomainException from '#exceptions/domain_exception'
+import InternalServerErrorException from '#exceptions/internal_server_error_exception'
 import { errors } from '@vinejs/vine'
 
 export default class HttpExceptionHandler extends ExceptionHandler {
@@ -39,6 +40,40 @@ export default class HttpExceptionHandler extends ExceptionHandler {
    * response to the client
    */
   async handle(error: unknown, ctx: HttpContext) {
+    // Se for uma rota da API, sempre retornar JSON
+    if (ctx.request.url().startsWith('/api/')) {
+      if (error instanceof DomainException) {
+        return ctx.response.status(error.status).json({
+          success: false,
+          message: error.message,
+          code: error.code,
+        })
+      }
+
+      if (error instanceof errors.E_VALIDATION_ERROR) {
+        return ctx.response.status(422).json({
+          success: false,
+          message: 'Erro de validação',
+          errors: error.messages,
+        })
+      }
+
+      if ('status' in (error as any)) {
+        return ctx.response.status((error as any).status).json({
+          message: (error as any).message,
+          code: (error as any).code,
+        })
+      }
+
+      const internalError = new InternalServerErrorException()
+      return ctx.response.status(internalError.status).json({
+        success: false,
+        message: internalError.message,
+        code: internalError.code,
+      })
+    }
+
+    // Para rotas não-API, usar o comportamento padrão
     if (error instanceof DomainException) {
       return ctx.response.status(error.status).json({
         success: false,

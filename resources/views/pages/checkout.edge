@@ -65,7 +65,27 @@
               <!-- QR Code -->
               <div class="flex justify-center">
                 <div class="bg-gray-100 p-4 rounded-lg">
-                  <div id="qrcode" class="w-64 h-64 bg-white p-4 rounded-lg shadow-sm">
+                  <div class="w-64 h-64 bg-white p-4 rounded-lg shadow-sm flex items-center justify-center">
+                    <img
+                      x-bind:src="`data:image/png;base64,${order.payment?.qrCodeBase64}`"
+                      x-show="order.payment?.qrCodeBase64"
+                      alt="QR Code PIX"
+                      class="w-full h-full object-contain"
+                    />
+                    <div x-show="!order.payment?.qrCodeBase64" class="text-gray-500 text-center">
+                      <svg class="w-16 h-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                        />
+
+                      </svg>
+                      <p class="text-sm">
+                        Gerando QR Code...
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -92,7 +112,11 @@
                     <span
                       class="flex-shrink-0 w-5 h-5 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs font-medium"
                     >3</span>
-                    <span>Confirme o pagamento no valor de <span class="font-medium">                        <span x-text="order.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })"></span></span></span>
+                    <span>Confirme o pagamento no valor de <span class="font-medium">
+                        <span x-text="Number(order.total).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })">
+                        </span>
+                      </span>
+                    </span>
                   </li>
                   <li class="flex items-start space-x-2">
                     <span
@@ -104,12 +128,12 @@
               </div>
 
               <!-- PIX Code -->
-              <div class="max-w-md mx-auto">
+              <div class="max-w-md mx-auto" x-show="order.payment?.qrCode">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Código PIX (copie e cole):</label>
                 <div class="flex space-x-2">
                   <input
                     type="text"
-                    x-bind:value="pixCode"
+                    x-bind:value="order.payment?.qrCode"
                     readonly
                     class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-50 text-gray-900"
                   />
@@ -141,6 +165,217 @@
             </div>
           </div>
 
+          <!-- Mercado Pago Payment -->
+          <div
+            x-show="order.paymentMethod === 'MERCADO_PAGO' && order.paymentStatus === 'PENDING'"
+            class="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+          >
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">
+              Pagamento via Mercado Pago
+            </h2>
+
+            <div class="text-center space-y-6">
+              <!-- Checkout Pro Button -->
+              <div class="flex justify-center">
+                <a
+                  x-bind:href="order.payment?.checkoutUrl || order.payment?.initPoint"
+                  target="_blank"
+                  class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                  </svg>
+                  Pagar com Mercado Pago
+                </a>
+              </div>
+
+              <!-- Payment Instructions -->
+              <div class="max-w-md mx-auto space-y-4">
+                <h3 class="text-lg font-medium text-gray-900">
+                  Como pagar:
+                </h3>
+                <ol class="text-left text-sm text-gray-600 space-y-2">
+                  <li class="flex items-start space-x-2">
+                    <span
+                      class="flex-shrink-0 w-5 h-5 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-medium"
+                    >1</span>
+                    <span>Clique no botão "Pagar com Mercado Pago" acima</span>
+                  </li>
+                  <li class="flex items-start space-x-2">
+                    <span
+                      class="flex-shrink-0 w-5 h-5 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-medium"
+                    >2</span>
+                    <span>Você será redirecionado para a página segura do Mercado Pago</span>
+                  </li>
+                  <li class="flex items-start space-x-2">
+                    <span
+                      class="flex-shrink-0 w-5 h-5 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-medium"
+                    >3</span>
+                    <span>Complete o pagamento no valor de <span class="font-medium">
+                        <span x-text="Number(order.total).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })">
+                        </span>
+                      </span>
+                    </span>
+                  </li>
+                  <li class="flex items-start space-x-2">
+                    <span
+                      class="flex-shrink-0 w-5 h-5 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-medium"
+                    >4</span>
+                    <span>Você será redirecionado de volta para esta página após o pagamento</span>
+                  </li>
+                </ol>
+              </div>
+
+              <!-- Payment Status -->
+              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div class="flex items-center space-x-2">
+                  <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <span class="text-sm text-blue-800">
+                    Aguardando confirmação do pagamento. Você receberá uma notificação assim que o pagamento for confirmado.
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stripe Payment -->
+          <div
+            x-show="order.paymentMethod === 'STRIPE' && order.paymentStatus === 'PENDING'"
+            class="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+          >
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">
+              Pagamento via Stripe
+            </h2>
+
+            <div class="text-center space-y-6">
+              <!-- Stripe Checkout Button -->
+              <div class="flex justify-center">
+                <button
+                  @click="openStripeCheckout()"
+                  class="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                >
+                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                  </svg>
+                  Pagar com Stripe
+                </button>
+              </div>
+
+              <!-- Payment Instructions -->
+              <div class="max-w-md mx-auto space-y-4">
+                <h3 class="text-lg font-medium text-gray-900">
+                  Pagamento Seguro
+                </h3>
+                
+                <p class="text-gray-600">
+                  Clique no botão acima para abrir a tela de pagamento segura do Stripe.
+                </p>
+
+                <!-- Payment Status -->
+                <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                  <div class="flex items-center space-x-2">
+                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span class="text-sm text-purple-800">
+                      Aguardando confirmação do pagamento. Você receberá uma notificação assim que o pagamento for confirmado.
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Alterar método de pagamento (discreto) -->
+          <div
+            x-show="order.paymentStatus === 'PENDING'"
+            class="bg-gray-50 rounded-lg border border-gray-200 p-4"
+          >
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-sm font-medium text-gray-700">Método de pagamento atual</h3>
+                <p class="text-sm text-gray-500" x-text="getPaymentMethodText(order.paymentMethod)"></p>
+              </div>
+              <button
+                @click="showPaymentMethodChange = !showPaymentMethodChange"
+                class="text-sm text-orange-600 hover:text-orange-700 font-medium"
+              >
+                Alterar
+              </button>
+            </div>
+            
+            <!-- Opções de alteração (colapsável) -->
+            <div x-show="showPaymentMethodChange" x-transition class="mt-4 space-y-3">
+              <div class="flex space-x-3">
+                <!-- PIX -->
+                <label class="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="newPaymentMethod"
+                    value="PIX"
+                    x-model="newPaymentMethod"
+                    class="w-4 h-4 text-orange-600 border-gray-300 focus:ring-orange-500"
+                  />
+                  <span class="text-sm text-gray-700">PIX</span>
+                </label>
+
+                <!-- Mercado Pago -->
+                <label class="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="newPaymentMethod"
+                    value="MERCADO_PAGO"
+                    x-model="newPaymentMethod"
+                    class="w-4 h-4 text-orange-600 border-gray-300 focus:ring-orange-500"
+                  />
+                  <span class="text-sm text-gray-700">Mercado Pago</span>
+                </label>
+
+                <!-- Stripe -->
+                <label class="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="newPaymentMethod"
+                    value="STRIPE"
+                    x-model="newPaymentMethod"
+                    class="w-4 h-4 text-orange-600 border-gray-300 focus:ring-orange-500"
+                  />
+                  <span class="text-sm text-gray-700">Stripe</span>
+                </label>
+              </div>
+
+              <div class="flex space-x-2">
+                <button
+                  @click="updatePaymentMethod()"
+                  x-bind:disabled="!newPaymentMethod || newPaymentMethod === order.paymentMethod || isUpdatingPayment"
+                  class="px-3 py-1.5 bg-orange-600 text-white text-sm rounded hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span x-show="!isUpdatingPayment">Confirmar</span>
+                  <span x-show="isUpdatingPayment" class="flex items-center gap-1">
+                    <svg class="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Alterando...
+                  </span>
+                </button>
+                <button
+                  @click="showPaymentMethodChange = false; newPaymentMethod = null"
+                  class="px-3 py-1.5 bg-gray-200 text-gray-700 text-sm rounded hover:bg-gray-300"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div
             x-show="order.paymentStatus === 'PAID'"
             x-transition
@@ -164,9 +399,6 @@
             <!-- Mensagem -->
             <p class="text-lg font-medium text-green-700">
               Pagamento realizado com sucesso!
-            </p>
-            <p class="text-sm text-gray-600">
-              Você receberá uma atualização quando seu pedido for enviado.
             </p>
           </div>
 
@@ -261,16 +493,16 @@
           loading: true,
           error: null,
           order: null,
-          pixCode: "cleber",
+          newPaymentMethod: null,
+          isUpdatingPayment: false,
+          showPaymentMethodChange: false,
           async loadOrder() {
             try {
               const orderId = window.location.pathname.split("/").pop();
-              const response = await fetch(`/api/orders/${orderId}`, {
-                headers: {
-                  Accept: "application/json",
-                  "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
-                }
+              const params = new URLSearchParams({
+                includes: [ "payment", "items", "user", "coupon" ]
               });
+              const response = await fetch(`/api/orders/${orderId}?${params.toString()}`);
               if (!response.ok) {
                 if (response.status === 401) {
                   window.location.href = "/login";
@@ -302,22 +534,22 @@
           getPaymentMethodText(method) {
             const methodMap = {
               PIX: "PIX",
-              CREDIT_CARD: "Cartão de Crédito",
-              DEBIT_CARD: "Cartão de Débito",
-              BANK_SLIP: "Boleto Bancário"
+              MERCADO_PAGO: "Mercado Pago",
+              STRIPE: "Stripe"
             };
             return methodMap[method] || method;
           },
           copyPixCode() {
-            navigator.clipboard.writeText(this.pixCode).then(() => {
-              // Show success message
+            const pixCode = this.order?.payment?.qrCode;
+            if (!pixCode) return;
+            navigator.clipboard.writeText(pixCode).then(() => {
               if (window.Alpine && window.Alpine.store("toast")) {
                 window.Alpine.store("toast").toast("Código PIX copiado!", "success");
               }
             }).catch(() => {
               // Fallback for older browsers
               const textArea = document.createElement("textarea");
-              textArea.value = this.pixCode;
+              textArea.value = pixCode;
               document.body.appendChild(textArea);
               textArea.select();
               document.execCommand("copy");
@@ -326,6 +558,51 @@
                 window.Alpine.store("toast").toast("Código PIX copiado!", "success");
               }
             });
+          },
+          openStripeCheckout() {
+            // Redirect to Stripe Checkout Session
+            if (this.order?.payment?.checkoutUrl) {
+              window.location.href = this.order.payment.checkoutUrl;
+            } else {
+              if (window.Alpine && window.Alpine.store("toast")) {
+                window.Alpine.store("toast").toast("URL de checkout não disponível", "error");
+              }
+            }
+          },
+          async updatePaymentMethod() {
+            if (!this.newPaymentMethod || this.newPaymentMethod === this.order.paymentMethod) return;
+            
+            this.isUpdatingPayment = true;
+            
+            try {
+              const response = await fetch(`/api/orders/${this.order.id}/payment-method`, {
+                method: 'PATCH',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json',
+                  'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                },
+                body: JSON.stringify({
+                  paymentMethod: this.newPaymentMethod
+                }),
+              });
+
+              if (response.ok) {
+                // Recarregar a página para mostrar o novo método de pagamento
+                window.location.reload();
+              } else {
+                const errorData = await response.json();
+                if (window.Alpine && window.Alpine.store("toast")) {
+                  window.Alpine.store("toast").toast(errorData.message || "Erro ao alterar método de pagamento", "error");
+                }
+              }
+            } catch (error) {
+              if (window.Alpine && window.Alpine.store("toast")) {
+                window.Alpine.store("toast").toast("Erro ao alterar método de pagamento", "error");
+              }
+            } finally {
+              this.isUpdatingPayment = false;
+            }
           }
         };
       }

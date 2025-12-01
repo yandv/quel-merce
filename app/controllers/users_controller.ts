@@ -211,7 +211,6 @@ export default class UsersController {
       throw new UserEmailAlreadyVerifiedException()
     }
 
-    // Gerar novo código
     const code = Math.random().toString(36).substring(2, 15)
     await UserEmailVerificationCode.create({
       userId: user.id,
@@ -221,7 +220,6 @@ export default class UsersController {
 
     await this.emailService.sendMagicLink(user.email, user, code)
 
-    // Calcular novos valores de countdown após criar o código
     const allCodes = await UserEmailVerificationCode.query()
       .where('user_id', user.id)
       .where('created_at', '>', DateTime.now().minus({ hours: 12 }).toISO())
@@ -230,7 +228,6 @@ export default class UsersController {
     const codeCount = allCodes.length
     const lastResendCountdown = this.getCountdown(codeCount - 1)
 
-    // O novo código acaba de ser criado, então o countdown é o tempo de espera
     const resendCountdown = lastResendCountdown
 
     return response.status(200).json({
@@ -253,7 +250,6 @@ export default class UsersController {
       throw new UserEmailAlreadyVerifiedException()
     }
 
-    // Verificar códigos de verificação das últimas 12 horas
     const existingCodes = await UserEmailVerificationCode.query()
       .where('user_id', user.id)
       .where('created_at', '>', DateTime.now().minus({ hours: 12 }).toISO())
@@ -266,7 +262,6 @@ export default class UsersController {
       })
     }
 
-    // Ordenar por data de criação (mais recente primeiro)
     const sortedCodes = existingCodes.sort((a, b) => b.createdAt.diff(a.createdAt).as('seconds'))
 
     const lastVerificationCode = sortedCodes[0]
@@ -295,7 +290,7 @@ export default class UsersController {
    */
   async getUserById({ params, request, response }: HttpContext) {
     const { id } = await userIdValidator.validate(params)
-    const { includes } = await includesValidator.validate(request.all())
+    const { includes = [] } = await includesValidator.validate(request.all())
     const includeArray = parseToArray(includes)
 
     const query = User.query().where('id', id)
@@ -321,7 +316,7 @@ export default class UsersController {
 
   async getUserOrders({ params, request, response }: HttpContext) {
     const { id } = await userIdValidator.validate(params)
-    const { includes } = await includesValidator.validate(request.all())
+    const { includes = [] } = await includesValidator.validate(request.all())
     const includeArray = parseToArray(includes)
 
     const user = await User.find(id)
@@ -349,7 +344,7 @@ export default class UsersController {
    */
   async getUserVehicles({ params, request, response }: HttpContext) {
     const { id } = await userIdValidator.validate(params)
-    const { includes } = await includesValidator.validate(request.all())
+    const { includes = [] } = await includesValidator.validate(request.all())
     const includeArray = parseToArray(includes)
 
     const user = await User.find(id)

@@ -68,20 +68,17 @@ export default class BrandsController {
       ...request.all(),
     })
 
-    // Verificar se a marca existe
     const brand = await Brand.find(brandId)
     if (!brand) {
       throw new BrandNotFoundException()
     }
 
-    // Verificar se o modelo existe e pertence à marca
     const model = await brand.related('models').query().where('id', modelId).first()
 
     if (!model) {
       throw new ModelNotFoundException()
     }
 
-    // Buscar anos relacionados ao modelo
     const query = Year.query().where('modelId', modelId).orderBy('year', 'desc')
 
     if (name) {

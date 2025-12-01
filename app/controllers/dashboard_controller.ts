@@ -8,7 +8,6 @@ export default class DashboardController {
    * Estatísticas gerais da dashboard admin
    */
   async getDashboardStats({ response }: HttpContext) {
-    // Estatísticas de usuários
     const [userStats] = await db
       .from('users')
       .select(
@@ -19,7 +18,6 @@ export default class DashboardController {
         db.raw('SUM(CASE WHEN created_at >= CURRENT_DATE THEN 1 ELSE 0 END)::int as new_today')
       )
 
-    // Estatísticas de produtos
     const [productStats] = await db
       .from('products')
       .select(
@@ -29,7 +27,6 @@ export default class DashboardController {
         db.raw('SUM(CASE WHEN sku IS NOT NULL THEN 1 ELSE 0 END)::int as with_sku')
       )
 
-    // Estatísticas de pedidos
     const [orderStats] = await db
       .from('orders')
       .select(
@@ -47,7 +44,6 @@ export default class DashboardController {
         db.raw('SUM(CASE WHEN created_at >= CURRENT_DATE THEN 1 ELSE 0 END)::int as orders_today')
       )
 
-    // Vendas totais (apenas pedidos pagos)
     const [salesStats] = await db
       .from('orders')
       .select(
@@ -62,7 +58,6 @@ export default class DashboardController {
         )
       )
 
-    // Vendas de hoje
     const [todaySales] = await db
       .from('orders')
       .select(
@@ -73,7 +68,6 @@ export default class DashboardController {
       )
       .whereRaw('DATE(created_at) = CURRENT_DATE')
 
-    // Comparação com ontem
     const yesterday = DateTime.now().minus({ days: 1 }).toSQLDate()
     const [yesterdaySales] = await db
       .from('orders')
@@ -87,7 +81,6 @@ export default class DashboardController {
       )
       .whereRaw('DATE(created_at) = ?', [yesterday])
 
-    // Calcular crescimento
     const todaySalesValue = todaySales.sales_today || 0
     const yesterdaySalesValue = yesterdaySales.sales_yesterday || 0
     const todayOrdersValue = todaySales.orders_today || 0
